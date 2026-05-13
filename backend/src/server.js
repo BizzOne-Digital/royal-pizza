@@ -44,52 +44,64 @@ async function connectDB() {
 }
 
 // ─────────────────────────────────────────────────────
-// CORS
-// ─────────────────────────────────────────────────────
-
-app.use(
-  cors({
-    origin: [
-      "https://royal-pizza-git-main-bizzone-digitals-projects.vercel.app/",
-      "http://localhost:3000",
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
-
-app.options("*", cors());
-
-// ─────────────────────────────────────────────────────
 // Middleware
 // ─────────────────────────────────────────────────────
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const allowedOrigins = [
+  "https://royal-pizza-xi.vercel.app",
+  "http://localhost:3000",
+];
 
-// DB connect middleware
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests without origin
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS not allowed"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Handle preflight requests
+app.options("*", cors());
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ─────────────────────────────────────────────────────
+// DB Connect Middleware
+// ─────────────────────────────────────────────────────
+
 app.use(async (req, res, next) => {
   try {
     await connectDB();
     next();
   } catch (err) {
-    console.error("Mongo Error:", err);
+    console.error("❌ Mongo Error:", err);
 
-    return res.status(500).json({
+    res.status(500).json({
       message: "Database connection failed",
     });
   }
 });
 
 // ─────────────────────────────────────────────────────
-// Health
+// Health Routes
 // ─────────────────────────────────────────────────────
 
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "Royal Pizza API Running",
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -108,18 +120,29 @@ app.use("/api/leads", leadsRouter);
 app.use("/api/admin", adminRouter);
 
 // ─────────────────────────────────────────────────────
-// Public Menu
+// Public Menu Route
 // ─────────────────────────────────────────────────────
 
 app.get("/api/menu", async (req, res) => {
   try {
-    const items = await MenuItem.find({
+    const { category } = req.query;
+
+    const query = {
       available: true,
+    };
+
+    if (category) {
+      query.category = category;
+    }
+
+    const items = await MenuItem.find(query).sort({
+      category: 1,
+      sortOrder: 1,
     });
 
     res.json(items);
   } catch (err) {
-    console.error("Menu Error:", err);
+    console.error("❌ Menu Fetch Error:", err);
 
     res.status(500).json({
       message: "Menu fetch failed",
@@ -128,7 +151,7 @@ app.get("/api/menu", async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────
-// 404
+// 404 Handler
 // ─────────────────────────────────────────────────────
 
 app.use((req, res) => {
@@ -142,10 +165,10 @@ app.use((req, res) => {
 // ─────────────────────────────────────────────────────
 
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
+  console.error("❌ Server Error:", err);
 
-  res.status(500).json({
-    message: "Internal server error",
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
   });
 });
 
@@ -156,7 +179,7 @@ app.use((err, req, res, next) => {
 module.exports = app;
 
 // ─────────────────────────────────────────────────────
-// Localhost only
+// Localhost Only
 // ─────────────────────────────────────────────────────
 
 if (process.env.NODE_ENV !== "production") {
