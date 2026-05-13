@@ -44,15 +44,26 @@ async function connectDB() {
 }
 
 // ─────────────────────────────────────────────────────
-// Middleware
+// CORS
 // ─────────────────────────────────────────────────────
 
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "https://royal-pizza-xi.vercel.app",
+      "http://localhost:3000",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+app.options("*", cors());
+
+// ─────────────────────────────────────────────────────
+// Middleware
+// ─────────────────────────────────────────────────────
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -65,7 +76,7 @@ app.use(async (req, res, next) => {
   } catch (err) {
     console.error("Mongo Error:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Database connection failed",
     });
   }
@@ -96,7 +107,10 @@ app.use("/api/orders", ordersRouter);
 app.use("/api/leads", leadsRouter);
 app.use("/api/admin", adminRouter);
 
-// Public menu
+// ─────────────────────────────────────────────────────
+// Public Menu
+// ─────────────────────────────────────────────────────
+
 app.get("/api/menu", async (req, res) => {
   try {
     const items = await MenuItem.find({
@@ -105,7 +119,7 @@ app.get("/api/menu", async (req, res) => {
 
     res.json(items);
   } catch (err) {
-    console.error(err);
+    console.error("Menu Error:", err);
 
     res.status(500).json({
       message: "Menu fetch failed",
@@ -124,16 +138,31 @@ app.use((req, res) => {
 });
 
 // ─────────────────────────────────────────────────────
+// Global Error Handler
+// ─────────────────────────────────────────────────────
+
+app.use((err, req, res, next) => {
+  console.error("Server Error:", err);
+
+  res.status(500).json({
+    message: "Internal server error",
+  });
+});
+
+// ─────────────────────────────────────────────────────
 // Export
 // ─────────────────────────────────────────────────────
 
 module.exports = app;
 
+// ─────────────────────────────────────────────────────
 // Localhost only
+// ─────────────────────────────────────────────────────
+
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 4000;
 
   app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 }
