@@ -16,7 +16,8 @@ const app = express();
 // MongoDB
 // ─────────────────────────────────────────────────────
 
-const MONGO_URI = process.env.MONGODB_URI;
+// ✅ THEEK KAR DO
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
 let cached = global.mongoose;
 
