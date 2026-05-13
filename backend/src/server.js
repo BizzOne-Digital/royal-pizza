@@ -10,8 +10,6 @@ const adminRouter = require("./routes/admin");
 
 const app = express();
 
-const PORT = process.env.PORT || 4000;
-
 // ✅ MongoDB Atlas URI
 const MONGO_URI =
   process.env.MONGODB_URI ||
@@ -22,7 +20,6 @@ app.use(
   cors({
     origin: [
       process.env.FRONTEND_URL || "http://localhost:3000",
-      "http://localhost:3000",
       "http://localhost:3001",
     ],
     credentials: true,
@@ -102,16 +99,10 @@ mongoose
   })
   .then(() => {
     console.log("✅ MongoDB Atlas Connected");
-
-    app.listen(PORT, () => {
-      console.log(`🍕 Royal Pizza API running → http://localhost:${PORT}`);
-    });
   })
   .catch((err) => {
     console.error("❌ MongoDB connection failed:");
     console.error(err.message);
-
-    process.exit(1);
   });
 
 module.exports = app;
