@@ -50,7 +50,7 @@ async function connectDB() {
 app.use(
   cors({
     origin: [
-      "https://royal-pizza-xi.vercel.app",
+      "https://royal-pizza-git-main-bizzone-digitals-projects.vercel.app/",
       "http://localhost:3000",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
