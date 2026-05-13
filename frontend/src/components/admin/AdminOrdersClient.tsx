@@ -6,8 +6,8 @@ import { AdminShell } from "./AdminShell";
 import { formatCurrency } from "@/lib/format";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://royal-pizza-api-git-main-bizzone-digitals-projects.vercel.app";
 
 type Stats = {
   totalOrders: number;
@@ -52,68 +52,39 @@ export function AdminDashboardClient() {
     recentOrders: [],
   });
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/orders`);
-        const orders = await res.json();
+    const token = localStorage.getItem("admin_token");
 
-        if (!Array.isArray(orders)) return;
+    fetch(`${BACKEND_URL}/api/admin/stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed");
+        }
 
-        const today = new Date();
-
-        const todayRevenue = orders
-          .filter((o) => {
-            const d = new Date(o.createdAt);
-
-            return (
-              d.getDate() === today.getDate() &&
-              d.getMonth() === today.getMonth() &&
-              d.getFullYear() === today.getFullYear()
-            );
-          })
-          .reduce((sum, o) => sum + (o.total || 0), 0);
-
-        const totalRevenue = orders.reduce(
-          (sum, o) => sum + (o.total || 0),
-          0
-        );
-
-        const pendingOrders = orders.filter(
-          (o) => o.status === "pending"
-        ).length;
-
-        const itemCounts: Record<string, number> = {};
-
-        orders.forEach((order) => {
-          order.items?.forEach((item: any) => {
-            itemCounts[item.name] =
-              (itemCounts[item.name] || 0) + item.quantity;
-          });
-        });
-
-        const topItems = Object.entries(itemCounts)
-          .map(([name, count]) => ({
-            name,
-            count,
-          }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5);
-
+        return res.json();
+      })
+      .then((data) => {
         setStats({
-          totalOrders: orders.length,
-          pendingOrders,
-          todayRevenue,
-          totalRevenue,
-          topItems,
-          recentOrders: orders.slice(0, 5),
+          totalOrders: data.totalOrders || 0,
+          pendingOrders: data.pendingOrders || 0,
+          todayRevenue: data.todayRevenue || 0,
+          totalRevenue: data.totalRevenue || 0,
+          topItems: data.topItems || [],
+          recentOrders: data.recentOrders || [],
         });
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error(err);
-      }
-    }
-
-    fetchOrders();
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const statCards = [
@@ -164,7 +135,7 @@ export function AdminDashboardClient() {
               </div>
 
               <p className={`font-display text-2xl ${card.color}`}>
-                {card.value}
+                {loading ? "..." : card.value}
               </p>
             </motion.div>
           ))}
@@ -177,41 +148,41 @@ export function AdminDashboardClient() {
             </h2>
 
             <div className="space-y-2">
-              {stats.recentOrders.map((order) => (
-                <div
-                  key={order._id}
-                  className="flex items-center justify-between rounded-md border border-gold/10 bg-white/[0.02] px-4 py-3"
-                >
-                  <div>
-                    <p className="text-sm text-cream">
-                      {order.customer.name}
-                    </p>
-
-                    <p className="text-xs text-cream/35">
-                      {timeAgo(order.createdAt)}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`rounded-full border px-2.5 py-0.5 text-xs ${
-                        statusColors[order.status] ?? ""
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-
-                    <span className="text-sm font-semibold text-gold">
-                      {formatCurrency(order.total)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              {stats.recentOrders.length === 0 && (
-                <p className="text-sm text-cream/30">
+              {stats.recentOrders.length === 0 ? (
+                <p className="text-sm text-cream/40">
                   No recent orders
                 </p>
+              ) : (
+                stats.recentOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="flex items-center justify-between rounded-md border border-gold/10 bg-white/[0.02] px-4 py-3"
+                  >
+                    <div>
+                      <p className="text-sm text-cream">
+                        {order.customer.name}
+                      </p>
+
+                      <p className="text-xs text-cream/35">
+                        {timeAgo(order.createdAt)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`rounded-full border px-2.5 py-0.5 text-xs ${
+                          statusColors[order.status] ?? ""
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+
+                      <span className="text-sm font-semibold text-gold">
+                        {formatCurrency(order.total)}
+                      </span>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>
@@ -222,42 +193,41 @@ export function AdminDashboardClient() {
             </h2>
 
             <div className="space-y-3">
-              {stats.topItems.map((item, i) => {
-                const max = stats.topItems[0]?.count || 1;
-
-                const pct = Math.round((item.count / max) * 100);
-
-                return (
-                  <div key={item.name}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-cream/70 truncate max-w-[160px]">
-                        {item.name}
-                      </span>
-
-                      <span className="text-gold/60 ml-2">
-                        {item.count}
-                      </span>
-                    </div>
-
-                    <div className="h-1.5 rounded-full bg-white/[0.06]">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${pct}%` }}
-                        transition={{
-                          delay: i * 0.1 + 0.3,
-                          duration: 0.6,
-                        }}
-                        className="h-full rounded-full bg-gradient-to-r from-gold/60 to-gold"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-
-              {stats.topItems.length === 0 && (
-                <p className="text-sm text-cream/30">
-                  No item data
+              {stats.topItems.length === 0 ? (
+                <p className="text-sm text-cream/40">
+                  No items yet
                 </p>
+              ) : (
+                stats.topItems.map((item, i) => {
+                  const max = stats.topItems[0].count;
+                  const pct = Math.round((item.count / max) * 100);
+
+                  return (
+                    <div key={item.name}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-cream/70 truncate max-w-[160px]">
+                          {item.name}
+                        </span>
+
+                        <span className="text-gold/60 ml-2">
+                          {item.count}
+                        </span>
+                      </div>
+
+                      <div className="h-1.5 rounded-full bg-white/[0.06]">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{
+                            delay: i * 0.1 + 0.3,
+                            duration: 0.6,
+                          }}
+                          className="h-full rounded-full bg-gradient-to-r from-gold/60 to-gold"
+                        />
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
