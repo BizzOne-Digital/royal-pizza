@@ -1,0 +1,138 @@
+/**
+ * Long-form marketing copy — edit narrative here (menu prices stay in menu.ts).
+ */
+
+export const HOME = {
+  heritageLead:
+    "A lantern-lit corner of old Georgetown — where parchment tones, crown gold, and the hum of the oven meet Guelph Street.",
+  heritageBody: [
+    "For decades, families, teams, and neighbours have met at our corner for stone-baked pizza, cold drinks, and the kind of hospitality you only get from a true local. We are proud to cook for Georgetown — not for a corporate script — and to keep recipes generous, flavours bold, and portions worthy of the crown.",
+    "The Royal is more than a name: it is a promise that your meal is treated like a feast — whether you are carrying out after practice, surprising the office, or feeding the block on a Friday night.",
+  ],
+  experienceTitle: "The Royal Experience",
+  experienceBody: [
+    "Royal Pizzeria and Bar stands on one simple principle: do the basics better than everyone else. Not louder, not trendier — just more consistent, more reliable, and more satisfying every time you order.",
+    "Our approach is rooted in authentic Italian-inspired cooking, but adapted for real life: fast orders, busy nights, family meals, and everything in between. What comes out of our kitchen isn’t experimental; it’s dependable food built to taste the same way every time you come back.",
+    "What makes us different is not what we add, but how carefully everything is put together. Every order is handled with attention, from preparation to final bake, so the result feels complete, balanced, and worth repeating.",
+  ],
+  craftTitle: "Authentic Italian-Inspired Preparation",
+  craftBody:
+    "Everything is built around balance: a base that holds up without feeling heavy, a sauce that brings natural richness without overpowering, and cheese that melts into the bake instead of sitting on top of it. It’s not about complexity — it’s about getting the fundamentals right so the final result speaks for itself.",
+  quotes: [
+    {
+      quote:
+        "We stopped counting how many game nights started with a Royal box — the smell alone pulls people off the porch.",
+      attribution: "A Guelph Street neighbour",
+    },
+    {
+      quote:
+        "It is the only pickup run where someone always asks to steal a wing before we make it home.",
+      attribution: "A local hockey parent",
+    },
+    {
+      quote:
+        "Generous toppings, fair bundles, and staff who actually remember your usual.",
+      attribution: "A Georgetown office regular",
+    },
+  ],
+  nightTitle: "Melted, Toasted, Perfectly Served",
+  nightBody:
+    "We’re open daily from 11:00 a.m. to 11:00 p.m., serving food made fresh throughout the day and delivered straight from the oven to your table. Every order is prepared to come out hot, fragrant, and satisfying — whether it’s a quick slice, a loaded sub, wings for the table, or a full family meal. Nothing sits waiting; everything is made when you order.",
+  favouritesSub:
+    "Explore our full range of flavours online: from handcrafted pizzas and toasted subs to saucy wings, rich pastas, baked garlic breads, fresh crisp bowls, flavour-packed sides, and sweet desserts to finish it right. Made for sharing, craving, or a full meal experience.",
+  dealsSub:
+    "Made for the moments that turn into plans — game nights, family dinners, birthdays, and those last-minute “we’re on our way” gatherings. Generous bundles, smart pricing, and no compromise on flavour or portions.",
+  whySub:
+    "In Georgetown, it’s not just about eating — it’s about knowing where real flavour lives. Food made with intention, generous portions, and the kind of balance that feels right from the first bite to the last.",
+} as const;
+
+export const ABOUT = {
+  timelineTitle: "Five decades on the map",
+  timelineIntro:
+    "Georgetown grew, storefronts changed, and tastes evolved — yet the rhythm of our kitchen stayed rooted in the same idea: feed the town like family.",
+  pillars: [
+    {
+      title: "Stone & fire",
+      body: "Our pizzas ride the heat of the stone — not a conveyor — so every pie carries the snap, chew, and leopard spots that signal honest baking.",
+    },
+    {
+      title: "Generosity as tradition",
+      body: "Royal portions are not a marketing line. They are how we thank a community that has carried us since 1973 — one loaded box at a time.",
+    },
+    {
+      title: "A full table",
+      body: "Pizza may be the crown jewel, but subs, wings, pastas, salads, and desserts complete the court. Mixed orders are welcome — encouraged, even.",
+    },
+  ],
+  communityTitle: "Community in every order",
+  communityBody: [
+    "We sponsor the spirit of local life — the teams, the fundraisers, the “little league is running late” nights. When you order Royal, you support a kitchen that reinvests its pride in the streets around it.",
+    "Our crew knows the difference between “extra hot” and “family mild,” between a rushed lunch pickup and a carefully timed party stack. Ask us for timing tips — we have packed a thousand trunks and never stopped learning.",
+  ],
+  closing:
+    "Whether you discovered us last week or your parents did in the seventies, you are part of the same story: Georgetown, hungry, and unwilling to settle for ordinary.",
+} as const;
+
+export const CONTACT = {
+  introExtra:
+    "Street parking is available along Guelph Street and nearby side streets; peak dinner hours can be busy, so ordering ahead keeps your pickup smooth.",
+  visitTipsTitle: "Before you visit",
+  visitTips: [
+    "Pickup is streamlined for online orders — have your confirmation ready and we will hand off piping hot.",
+    "Large group or office catering? Call ahead so we can stage sauces, wings, and garlic breads without slowing the line.",
+    "Allergies and modifications: speak with us directly — we will do our honest best within the rhythm of a busy kitchen.",
+  ],
+  faqTitle: "Quick answers",
+  faqs: [
+    {
+      q: "Do you deliver?",
+      a: "We focus on exceptional pickup and fast counter service. For the most accurate service area and options, call us or check your preferred ordering link.",
+    },
+    {
+      q: "How late are you open?",
+      a: "We are open 11:00 a.m. – 11:00 p.m. daily — perfect for late slices after the game.",
+    },
+    {
+      q: "Can I customize a deal?",
+      a: "Deals are crafted for value and speed; substitutions may vary. Ask when you order — we love solving “almost perfect” requests when we can.",
+    },
+  ],
+} as const;
+
+export const DEALS = {
+  introTitle: "Royal bundles — built for real gatherings",
+  introParas: [
+    "Our deals are engineered like a banquet planner’s notebook: pairings that make sense, portions that disappear fast, and a little theatre when you lift the lid off the box.",
+    "From twin pizzas with toppings to wing feasts and pasta pairs, each bundle is designed to travel well — so flavours arrive as bold as they left the kitchen.",
+  ],
+  policyTitle: "How specials work",
+  policyBullets: [
+    "Prices and combinations may change with seasonality and supply — we always confirm at checkout or on the phone.",
+    "Most deals are pickup-optimized; ask about staging large orders if you are feeding a crowd.",
+    "Looking for something bespoke? Combine menu favourites à la carte — our crew will help you balance flavours and budget.",
+  ],
+} as const;
+
+export const WHY_EXTRA = {
+  introParas: [
+    "Chains optimize for sameness. We optimize for soul — the snap of crust, the perfume of garlic, the hum of a dining room that remembers your name.",
+    "Below is not hype — it is the difference between a restaurant that belongs to a spreadsheet and one that belongs to Georgetown.",
+  ],
+  promiseTitle: "Our promise to the town",
+  promiseBody:
+    "We will never trade away the details that make a meal memorable: proper bake, respectful pricing, sauces with backbone, and the warmth of a team that treats your order like their own dinner table.",
+} as const;
+
+export const MENU_INTRO = {
+  title: "A menu written for cravings — and crowds",
+  paras: [
+    "Browse by category or search to plot your feast. Specialty pizzas celebrate local appetites; build-your-own puts the crown in your hands. Subs are dressed like main courses, wings sauced with intent, and pastas baked until the edges caramelize.",
+    "Planning a mixed pickup? Start with pizzas for the table, add wings or garlic bread for the middle, and finish with salads or desserts to cool the palette. Our counter team can help you sequence cook times so everything lands hot.",
+  ],
+  tipsTitle: "Ordering tips from the pass",
+  tips: [
+    "Peak dinner runs 5–8 p.m. — order a little early on Fridays and game nights.",
+    "If you need multiple sauces for wings, choose a weight tier that includes two sauces — it is built for sharers.",
+    "Garlic breads travel beautifully; ask us to slice for easy serving at home.",
+  ],
+} as const;

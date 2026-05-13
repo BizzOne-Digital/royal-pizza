@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-charcoal: #0b0a08;
+  --color-gold: #c99a3a;
+  --color-red: #8b1e16;
+  --color-cream: #f6e8c8;
+  --color-parchment: #d8c49a;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-charcoal text-cream font-body antialiased;
+  }
+  ::selection {
+    @apply bg-gold/40 text-charcoal;
+  }
+}
+
+/* Subtle vignette + slow drift for an “exotic parlour” depth */
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(201, 154, 58, 0.09), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(139, 30, 22, 0.07), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 0% 80%, rgba(201, 154, 58, 0.05), transparent 45%);
+  animation: exoticDrift 18s ease-in-out infinite alternate;
+}
+
+@keyframes exoticDrift {
+  0% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  body::before {
+    animation: none;
+    opacity: 0.9;
+  }
+}
+
+/* Parchment + subtle map grid */
+.bg-parchment-map {
+  background-color: #4a321f;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(11, 10, 8, 0.88) 0%,
+      rgba(11, 10, 8, 0.72) 40%,
+      rgba(11, 10, 8, 0.85) 100%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      rgba(201, 154, 58, 0.06) 31px,
+      rgba(201, 154, 58, 0.06) 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 31px,
+      rgba(201, 154, 58, 0.05) 31px,
+      rgba(201, 154, 58, 0.05) 32px
+    ),
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(201, 154, 58, 0.15), transparent),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='%23d8c49a' fill-opacity='0.04' d='M0 60h60v60H0z'/%3E%3C/svg%3E");
+}
+
+.bg-parchment-light {
+  background-color: #d8c49a;
+  background-image:
+    linear-gradient(180deg, rgba(246, 232, 200, 0.5), rgba(216, 196, 154, 0.95)),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.text-engraved {
+  text-shadow:
+    0 1px 0 rgba(246, 232, 200, 0.15),
+    0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.ribbon-red {
+  background: linear-gradient(180deg, #a3221a 0%, #8b1e16 45%, #6f1812 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.border-gold-double {
+  border: 2px solid #c99a3a;
+  box-shadow:
+    inset 0 0 0 1px rgba(11, 10, 8, 0.6),
+    0 0 0 1px rgba(201, 154, 58, 0.35);
+}
+
+.exotic-shimmer-line {
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 154, 58, 0.15),
+    rgba(201, 154, 58, 0.85),
+    rgba(246, 232, 200, 0.5),
+    rgba(201, 154, 58, 0.85),
+    rgba(139, 30, 22, 0.35),
+    transparent
+  );
+  background-size: 200% 100%;
+  @apply animate-border-flow;
+}
+
+.card-lift {
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s ease,
+    border-color 0.35s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 40px rgba(201, 154, 58, 0.12);
+}
