@@ -8,12 +8,42 @@ const ordersRouter = require("./routes/orders");
 const leadsRouter = require("./routes/leads");
 const adminRouter = require("./routes/admin");
 
+const MenuItem = require("./models/MenuItem");
+
 const app = express();
 
 // ✅ MongoDB Atlas URI
 const MONGO_URI =
   process.env.MONGODB_URI ||
   "mongodb+srv://bizzone:bizzone@cluster0.bwpdzae.mongodb.net/royal-pizza?retryWrites=true&w=majority&appName=Cluster0";
+
+// ─── MongoDB Connection Cache (Vercel Fix) ───────────────────────────────────
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = {
+    conn: null,
+    promise: null,
+  };
+}
+
+async function connectDB() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGO_URI, {
+      bufferCommands: false,
+    });
+  }
+
+  cached.conn = await cached.promise;
+
+  console.log("✅ MongoDB Atlas Connected");
+
+  return cached.conn;
+}
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(
@@ -29,6 +59,20 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// ✅ Connect DB before every request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("❌ MongoDB Error:", err);
+
+    return res.status(500).json({
+      message: "Database connection failed",
+    });
+  }
+});
+
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.json({
@@ -40,7 +84,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  res.json({ status: "healthy" });
+  res.json({
+    status: "healthy",
+  });
 });
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
@@ -48,14 +94,14 @@ app.use("/api/orders", ordersRouter);
 app.use("/api/leads", leadsRouter);
 app.use("/api/admin", adminRouter);
 
-// ─── Public menu route ───────────────────────────────────────────────────────
-const MenuItem = require("./models/MenuItem");
-
+// ─── Public Menu Route ──────────────────────────────────────────────────────
 app.get("/api/menu", async (req, res) => {
   try {
     const { category } = req.query;
 
-    const query = { available: true };
+    const query = {
+      available: true,
+    };
 
     if (category) {
       query.category = category;
@@ -68,7 +114,7 @@ app.get("/api/menu", async (req, res) => {
 
     res.json(items);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Menu Fetch Error:", err);
 
     res.status(500).json({
       message: "Server error.",
@@ -76,33 +122,29 @@ app.get("/api/menu", async (req, res) => {
   }
 });
 
-// ─── 404 handler ─────────────────────────────────────────────────────────────
+// ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({
     message: `Route ${req.method} ${req.path} not found.`,
   });
 });
 
-// ─── Global error handler ────────────────────────────────────────────────────
+// ─── Global Error Handler ───────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
+  console.error("❌ Unhandled Error:", err);
 
   res.status(err.status || 500).json({
     message: err.message || "Internal server error.",
   });
 });
 
-// ─── MongoDB Connect ─────────────────────────────────────────────────────────
-mongoose
-  .connect(MONGO_URI, {
-    serverSelectionTimeoutMS: 5000,
-  })
-  .then(() => {
-    console.log("✅ MongoDB Atlas Connected");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection failed:");
-    console.error(err.message);
+// ✅ Localhost Support
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 4000;
+
+  app.listen(PORT, () => {
+    console.log(`🍕 Server running on http://localhost:${PORT}`);
   });
+}
 
 module.exports = app;
