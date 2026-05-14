@@ -15,6 +15,7 @@ export default function PizzaDealsPage() {
         variant="inner"
         title="Pizza deals & specials"
         subtitle="Pickup bundles crafted for families, teams, and celebrations — always made fresh in Georgetown."
+        bgImage="https://images.unsplash.com/photo-1555072956-7758afb20e8f?q=80"
       />
       <PizzaDealsPageBody />
     </>
