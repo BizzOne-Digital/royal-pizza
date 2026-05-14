@@ -16,7 +16,7 @@ export default function MenuPage() {
         variant="inner"
         title="Our Menu"
         subtitle="Stone-baked pizzas, loaded subs, saucy wings, rich pastas, and more — filter by category or search to plan your perfect pickup."
-        bgImage="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80"
+        bgImage="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80"
         bgAlt="Royal Pizzeria and Bar kitchen and food spread"
       />
       <Suspense
