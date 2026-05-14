@@ -15,6 +15,7 @@ export default function WhyPage() {
         variant="inner"
         title="Where Quality Stays Consistent"
         subtitle="Authentic Italian-inspired food, made the same way every time. Just steady flavour and reliable results in every order."
+        bgImage="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80"
       />
       <WhyPageBody />
     </>
