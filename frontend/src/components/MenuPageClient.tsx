@@ -284,7 +284,7 @@ export function MenuPageClient() {
         <div>
           <h1 className="font-display text-3xl text-gold md:text-4xl">Build Your Order, Your Way</h1>
           <p className="mt-1.5 max-w-xl text-sm text-cream/65">
-            Browse every category, search what you're craving, and add directly to your cart.
+            Browse every category, search what you&apos;re craving, and add directly to your cart.
           </p>
         </div>
         <label className="block w-full md:max-w-xs">
