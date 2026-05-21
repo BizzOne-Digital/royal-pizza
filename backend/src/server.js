@@ -50,7 +50,7 @@ async function connectDB() {
 
 const allowedOrigins = [
   "https://royal-pizza-xi.vercel.app",
-  "https://royal-pizza-api-git-main-bizzone-digitals-projects.vercel.app",
+  "https://royal-pizza-api.vercel.app/",
   "http://localhost:3000",
 ];
 app.use(

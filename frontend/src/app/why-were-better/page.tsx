@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Why We’re Better",
   description:
     "Local roots since 1973, stone-baked pizza, full-menu variety, and Georgetown-first service — Royal Pizza and Subs vs ordinary chain pizza.",
+    
 };
 
 export default function WhyPage() {

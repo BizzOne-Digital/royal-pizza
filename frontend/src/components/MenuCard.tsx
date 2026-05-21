@@ -1,36 +1,37 @@
 "use client";
 
-import type { PizzaPrices, SimpleMenuItem, SpecialtyPizza } from "@/data/menu";
+import type { PizzaPrices, SimpleMenuItem, SpecialtyPizza, SignaturePizza } from "@/data/menu";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/format";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 
-const sizeLabels: { key: keyof PizzaPrices; short: string; label: string }[] = [
-  { key: "S", short: "S", label: '10"' },
-  { key: "M", short: "M", label: '12"' },
-  { key: "L", short: "L", label: '14"' },
-  { key: "XL", short: "XL", label: '16"' },
-  { key: "P", short: "P", label: '18"' },
+const sizeLabels: { key: keyof PizzaPrices; short: string; full: string }[] = [
+  { key: "S", short: "S", full: "Small" },
+  { key: "M", short: "M", full: "Medium" },
+  { key: "L", short: "L", full: "Large" },
+  { key: "XL", short: "XL", full: "Jumbo" },
+  { key: "P", short: "P", full: "Party" },
 ];
 
-function AddedFeedback({ show }: { show: boolean }) {
+function AddedBadge({ show }: { show: boolean }) {
   return (
     <AnimatePresence>
       {show && (
         <motion.span
-          initial={{ opacity: 0, scale: 0.8, y: 4 }}
+          initial={{ opacity: 0, scale: 0.75, y: 6 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className="absolute inset-0 flex items-center justify-center rounded-md bg-gold/20 text-xs font-semibold text-gold pointer-events-none"
+          exit={{ opacity: 0, scale: 0.75 }}
+          className="absolute inset-0 flex items-center justify-center rounded-lg bg-green-900/80 text-sm font-bold text-green-300 pointer-events-none backdrop-blur-sm"
         >
-          ✓ Added!
+          ✓ Added to Cart
         </motion.span>
       )}
     </AnimatePresence>
   );
 }
 
+/* ─── SPECIALTY PIZZA CARD ─────────────────────────────────────────────────── */
 export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<keyof PizzaPrices>("M");
@@ -39,11 +40,11 @@ export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
   const handleAdd = () => {
     const sizeInfo = sizeLabels.find((s) => s.key === selectedSize)!;
     addItem({
-      id: pizza.id,
+      id: `${pizza.id}-${selectedSize}`,
       name: pizza.name,
       category: "pizza",
       price: pizza.prices[selectedSize],
-      size: `${sizeInfo.short} (${sizeInfo.label})`,
+      size: sizeInfo.full,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -52,62 +53,83 @@ export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -5, boxShadow: "0 16px 40px rgba(0,0,0,0.4), 0 0 30px rgba(201,154,58,0.12)" }}
-      className="card-lift border-gold-double rounded-lg bg-charcoal/80 p-5 shadow-lg ring-1 ring-gold/10 flex flex-col"
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+      className="group flex flex-col rounded-2xl border border-gold/20 bg-gradient-to-b from-[#1c1a14] to-charcoal/90 p-5 shadow-lg transition-all duration-300 hover:border-gold/45 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_24px_rgba(201,154,58,0.1)]"
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-display text-xl text-gold">{pizza.name}</h3>
-        <p className="text-sm text-cream/70">Starting at {formatCurrency(pizza.startingAt)}</p>
+      {/* Header */}
+      <div className="flex items-baseline justify-between gap-2 mb-3">
+        <h3 className="font-display text-lg text-gold leading-tight">{pizza.name}</h3>
+        <span className="shrink-0 text-xs text-cream/45">from {formatCurrency(pizza.startingAt)}</span>
       </div>
-      <dl className="mt-3 space-y-1 text-sm text-cream/85">
-        <div><dt className="inline text-gold/90">Sauce: </dt><dd className="inline">{pizza.sauce}</dd></div>
-        <div><dt className="inline text-gold/90">Toppings: </dt><dd className="inline">{pizza.toppings}</dd></div>
-        {pizza.drizzle && <div><dt className="inline text-gold/90">Drizzle: </dt><dd className="inline">{pizza.drizzle}</dd></div>}
-        {pizza.choiceOfDrizzle && <div><dt className="inline text-gold/90">Choice of Drizzle: </dt><dd className="inline">{pizza.choiceOfDrizzle}</dd></div>}
-      </dl>
-      <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs sm:text-sm">
+
+      {/* Info chips */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <span className="rounded-full border border-gold/30 bg-gold/8 px-2.5 py-0.5 text-[11px] text-gold/80">
+          🍅 {pizza.sauce}
+        </span>
+        {pizza.drizzle && (
+          <span className="rounded-full border border-red-500/30 bg-red-900/20 px-2.5 py-0.5 text-[11px] text-red-300/80">
+            🌶 {pizza.drizzle} drizzle
+          </span>
+        )}
+      </div>
+      <p className="text-sm text-cream/70 leading-relaxed mb-4 flex-1">{pizza.toppings}</p>
+
+      {/* Size selector */}
+      <div className="grid grid-cols-5 gap-1 mb-3">
         {sizeLabels.map(({ key, short }) => (
           <button
             key={key}
             onClick={() => setSelectedSize(key)}
-            className={`rounded border py-1.5 transition-all ${selectedSize === key ? "border-gold bg-gold/15 text-gold" : "border-gold/25 bg-charcoal/50 text-cream hover:border-gold/50"}`}
+            className={`flex flex-col items-center rounded-lg border py-1.5 transition-all duration-200 ${
+              selectedSize === key
+                ? "border-gold bg-gold/18 shadow-[0_0_10px_rgba(201,154,58,0.2)]"
+                : "border-gold/20 bg-charcoal/40 hover:border-gold/40"
+            }`}
           >
-            <div className="text-[10px] uppercase text-gold/80">{short}</div>
-            <div className="font-semibold">{formatCurrency(pizza.prices[key])}</div>
+            <span className={`text-[10px] font-bold uppercase ${selectedSize === key ? "text-gold" : "text-cream/50"}`}>{short}</span>
+            <span className={`text-xs font-semibold ${selectedSize === key ? "text-gold" : "text-cream/70"}`}>
+              ${pizza.prices[key].toFixed(2)}
+            </span>
           </button>
         ))}
       </div>
-      <div className="mt-3 flex-1 flex items-end">
-        <div className="relative w-full">
-          <motion.button
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            onClick={handleAdd}
-            className="w-full rounded-md border border-gold/50 bg-gold/10 py-2.5 text-sm font-semibold text-gold transition hover:bg-gold/20"
-          >
-            Add to Cart — {formatCurrency(pizza.prices[selectedSize])}
-          </motion.button>
-          <AddedFeedback show={added} />
-        </div>
+
+      {/* Add to cart */}
+      <div className="relative">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={handleAdd}
+          className="w-full rounded-lg bg-gold/15 border border-gold/40 py-2.5 text-sm font-bold text-gold transition-all hover:bg-gold/25 hover:border-gold/70 hover:shadow-[0_0_16px_rgba(201,154,58,0.2)]"
+        >
+          Add to Cart — {formatCurrency(pizza.prices[selectedSize])}
+        </motion.button>
+        <AddedBadge show={added} />
       </div>
     </motion.article>
   );
 }
 
-export function SimpleItemCard({ item }: { item: SimpleMenuItem }) {
+/* ─── SIGNATURE PIZZA CARD ─────────────────────────────────────────────────── */
+export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
   const { addItem } = useCart();
+  const [selectedIdx, setSelectedIdx] = useState(0);
   const [added, setAdded] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState<{ label: string; amount: number } | null>(item.prices?.[0] ?? null);
 
-  const price = typeof item.price === "number" ? item.price : selectedPrice?.amount ?? 0;
-  const sizeName = selectedPrice?.label;
+  const selected = pizza.prices[selectedIdx];
 
   const handleAdd = () => {
-    if (!price) return;
-    addItem({ id: item.id, name: item.name, category: "item", price, size: sizeName });
+    addItem({
+      id: `${pizza.id}-${selected.label}`,
+      name: pizza.name,
+      category: "signature-pizza",
+      price: selected.amount,
+      size: selected.label,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -115,43 +137,229 @@ export function SimpleItemCard({ item }: { item: SimpleMenuItem }) {
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-15px" }} transition={{ duration: 0.4 }}
-      whileHover={{ x: 4, borderColor: "rgba(201,154,58,0.55)" }}
-      className="flex flex-col gap-2 rounded-lg border border-gold/25 bg-charcoal/70 p-4"
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-20px" }}
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col rounded-2xl border border-amber-700/30 bg-gradient-to-b from-amber-950/30 to-charcoal/90 p-5 shadow-lg transition-all duration-300 hover:border-amber-600/50 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]"
     >
-      <div className="flex sm:flex-row flex-col sm:items-start sm:justify-between gap-2">
-        <div className="flex-1">
-          <h3 className="font-display text-lg text-cream">{item.name}</h3>
-          {item.description && <p className="mt-1 text-sm text-cream/75">{item.description}</p>}
-        </div>
-        <div className="shrink-0 text-right">
-          {typeof item.price === "number" && <p className="font-semibold text-gold">{formatCurrency(item.price)}</p>}
-          {item.prices && (
-            <div className="flex flex-wrap gap-1 justify-end mt-1">
-              {item.prices.map((p) => (
-                <button key={p.label} onClick={() => setSelectedPrice(p)}
-                  className={`rounded px-2 py-0.5 text-xs border transition-all ${selectedPrice?.label === p.label ? "border-gold bg-gold/15 text-gold" : "border-gold/30 text-gold/70 hover:border-gold/60"}`}
-                >
-                  {p.label}: {formatCurrency(p.amount)}
-                </button>
-              ))}
-            </div>
-          )}
+      {/* Crown badge */}
+      <div className="flex items-baseline justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-base">👑</span>
+          <h3 className="font-display text-lg text-amber-300 leading-tight">{pizza.name}</h3>
         </div>
       </div>
-      {price > 0 && (
+
+      <p className="text-sm text-cream/70 leading-relaxed mb-4 flex-1">{pizza.toppings}</p>
+
+      {/* Size picker */}
+      <div className="flex gap-2 mb-3">
+        {pizza.prices.map((p, i) => (
+          <button
+            key={p.label}
+            onClick={() => setSelectedIdx(i)}
+            className={`flex-1 rounded-lg border py-2 text-xs transition-all ${
+              selectedIdx === i
+                ? "border-amber-500/60 bg-amber-900/30 text-amber-300 font-bold"
+                : "border-gold/20 text-cream/60 hover:border-gold/40"
+            }`}
+          >
+            <div>{p.label}</div>
+            <div className="font-semibold">${p.amount.toFixed(2)}</div>
+          </button>
+        ))}
+      </div>
+
+      <div className="relative">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={handleAdd}
+          className="w-full rounded-lg bg-amber-900/30 border border-amber-600/40 py-2.5 text-sm font-bold text-amber-300 transition-all hover:bg-amber-900/50 hover:border-amber-500/60"
+        >
+          Add to Cart — {formatCurrency(selected.amount)}
+        </motion.button>
+        <AddedBadge show={added} />
+      </div>
+    </motion.article>
+  );
+}
+
+/* ─── SIMPLE ITEM CARD ─────────────────────────────────────────────────────── */
+export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; category?: string }) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState<{ label: string; amount: number } | null>(
+    item.prices?.[0] ?? null
+  );
+
+  const price = typeof item.price === "number" ? item.price : selectedPrice?.amount ?? 0;
+
+  const handleAdd = () => {
+    if (!price) return;
+    addItem({
+      id: `${item.id}-${selectedPrice?.label ?? "std"}`,
+      name: item.name,
+      category: category ?? "item",
+      price,
+      size: selectedPrice?.label,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, x: -8 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-12px" }}
+      transition={{ duration: 0.38 }}
+      className="group flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-3.5 transition-all duration-200 hover:border-gold/40 hover:bg-charcoal/80"
+    >
+      {/* Name + desc */}
+      <div className="flex-1 min-w-0">
+        <h3 className="font-display text-base text-cream leading-snug">{item.name}</h3>
+        {item.description && (
+          <p className="mt-0.5 text-xs text-cream/55 leading-relaxed line-clamp-2">{item.description}</p>
+        )}
+        {item.note && (
+          <p className="mt-1 text-[11px] text-gold/60 italic">{item.note}</p>
+        )}
+      </div>
+
+      {/* Price + sizes + button */}
+      <div className="flex flex-col items-end gap-2 shrink-0">
+        {typeof item.price === "number" && (
+          <span className="text-base font-bold text-gold">{formatCurrency(item.price)}</span>
+        )}
+        {item.prices && (
+          <div className="flex gap-1.5">
+            {item.prices.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => setSelectedPrice(p)}
+                className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
+                  selectedPrice?.label === p.label
+                    ? "border-gold bg-gold/18 text-gold shadow-[0_0_8px_rgba(201,154,58,0.15)]"
+                    : "border-gold/25 text-gold/60 hover:border-gold/50 hover:text-gold/80"
+                }`}
+              >
+                {p.label} {formatCurrency(p.amount)}
+              </button>
+            ))}
+          </div>
+        )}
+        {price > 0 ? (
+          <div className="relative w-full sm:w-auto">
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleAdd}
+              className="rounded-lg border border-gold/35 bg-gold/10 px-4 py-1.5 text-xs font-bold text-gold transition-all hover:bg-gold/22 hover:border-gold/60 whitespace-nowrap"
+            >
+              + Add to Cart
+            </motion.button>
+            <AddedBadge show={added} />
+          </div>
+        ) : (
+          <span className="text-xs text-cream/35 italic">Price varies</span>
+        )}
+      </div>
+    </motion.article>
+  );
+}
+
+/* ─── WINGS CARD ────────────────────────────────────────────────────────────── */
+export function WingsCard({ item }: { item: SimpleMenuItem }) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    if (!item.price) return;
+    addItem({
+      id: item.id,
+      name: item.name,
+      category: "wings",
+      price: item.price,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10px" }}
+      transition={{ duration: 0.38 }}
+      className="flex items-center justify-between gap-3 rounded-xl border border-orange-700/25 bg-gradient-to-r from-orange-950/20 to-charcoal/70 px-5 py-4 transition-all hover:border-orange-600/40"
+    >
+      <div>
+        <h3 className="font-display text-base text-orange-300">{item.name}</h3>
+        {item.description && <p className="text-xs text-cream/60 mt-0.5">{item.description}</p>}
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        <span className="text-lg font-bold text-orange-300">{formatCurrency(item.price ?? 0)}</span>
         <div className="relative">
           <motion.button
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleAdd}
-            className="w-full rounded border border-gold/30 py-1.5 text-xs font-semibold text-gold/80 transition hover:bg-gold/10 hover:text-gold hover:border-gold/50"
+            className="rounded-lg border border-orange-500/40 bg-orange-900/25 px-3 py-1.5 text-xs font-bold text-orange-300 transition-all hover:bg-orange-900/45 hover:border-orange-400/60"
           >
-            + Add to Cart — {formatCurrency(price)}
+            + Add
           </motion.button>
-          <AddedFeedback show={added} />
+          <AddedBadge show={added} />
         </div>
-      )}
+      </div>
+    </motion.article>
+  );
+}
+
+/* ─── STARTER CARD ──────────────────────────────────────────────────────────── */
+export function StarterCard({ item }: { item: SimpleMenuItem }) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+  const hasPrice = typeof item.price === "number" && item.price > 0;
+
+  const handleAdd = () => {
+    if (!hasPrice) return;
+    addItem({ id: item.id, name: item.name, category: "starter", price: item.price! });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10px" }}
+      transition={{ duration: 0.38 }}
+      className="flex items-center justify-between gap-4 rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-3.5 transition-all hover:border-gold/38 hover:bg-charcoal/75"
+    >
+      <div className="flex-1">
+        <h3 className="font-display text-base text-cream">{item.name}</h3>
+        {item.description && <p className="text-xs text-cream/55 mt-0.5 line-clamp-2">{item.description}</p>}
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        {hasPrice && <span className="font-bold text-gold">{formatCurrency(item.price!)}</span>}
+        <div className="relative">
+          {hasPrice ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={handleAdd}
+              className="rounded-lg border border-gold/35 bg-gold/10 px-3 py-1.5 text-xs font-bold text-gold transition-all hover:bg-gold/22 hover:border-gold/60"
+            >
+              + Add
+            </motion.button>
+          ) : (
+            <span className="text-xs text-cream/35 italic">Ask for price</span>
+          )}
+          <AddedBadge show={added} />
+        </div>
+      </div>
     </motion.article>
   );
 }

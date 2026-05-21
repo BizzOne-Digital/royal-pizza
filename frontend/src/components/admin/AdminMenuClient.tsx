@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { AdminShell } from "./AdminShell";
 import { formatCurrency } from "@/lib/format";
-import { SPECIALTY_PIZZAS, SUBS, WINGS, PASTAS } from "@/data/menu";
+import { SPECIALTY_PIZZAS, SIGNATURE_PIZZAS, SUBS, SANDWICHES, WINGS, PASTAS, SIGNATURE_PASTAS, STARTERS } from "@/data/menu";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -19,10 +19,14 @@ type MenuItem = {
 };
 
 const INITIAL_ITEMS: MenuItem[] = [
+  ...STARTERS.slice(0, 3).map((s) => ({ _id: s.id, name: s.name, category: "starter", price: s.price ?? 0, description: s.description, available: true })),
   ...SPECIALTY_PIZZAS.slice(0, 4).map((p) => ({ _id: p.id, name: p.name, category: "pizza", price: p.prices.M, description: p.toppings, available: true })),
+  ...SIGNATURE_PIZZAS.slice(0, 2).map((p) => ({ _id: p.id, name: p.name, category: "signature-pizza", price: p.prices[0]?.amount ?? 0, description: p.toppings, available: true })),
+  ...SANDWICHES.map((s) => ({ _id: s.id, name: s.name, category: "sandwich", price: s.price ?? 0, description: s.description, available: true })),
   ...SUBS.slice(0, 3).map((s) => ({ _id: s.id, name: s.name, category: "sub", price: s.price ?? 0, description: s.description, available: true })),
   ...WINGS.slice(0, 2).map((w) => ({ _id: w.id, name: w.name, category: "wings", price: w.price ?? 0, available: true })),
-  ...PASTAS.slice(0, 2).map((p) => ({ _id: p.id, name: p.name, category: "pasta", price: p.price ?? 0, description: p.description, available: true })),
+  ...PASTAS.map((p) => ({ _id: p.id, name: p.name, category: "pasta", price: p.price ?? 0, description: p.description, available: true })),
+  ...SIGNATURE_PASTAS.map((p) => ({ _id: p.id, name: p.name, category: "signature-pasta", price: p.price ?? 0, description: p.description, available: true })),
 ];
 
 const ease = [0.22, 1, 0.36, 1] as const;

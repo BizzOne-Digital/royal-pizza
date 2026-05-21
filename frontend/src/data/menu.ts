@@ -1,6 +1,7 @@
 /**
  * Central source for menu, deals, and site facts.
  * Update prices and copy here only.
+ * Updated from The Royal Menu (xlsx) — May 2026
  */
 
 export const SITE = {
@@ -22,13 +23,146 @@ export const SITE = {
   established: 1973,
 } as const;
 
+// ─── SHARED TYPES ──────────────────────────────────────────────────────────────
+
 export type PizzaPrices = {
-  S: number;
-  M: number;
-  L: number;
-  XL: number;
-  P: number;
+  S: number;   // Small
+  M: number;   // Medium
+  L: number;   // Large
+  XL: number;  // Jumbo
+  P: number;   // Party
 };
+
+export type SimpleMenuItem = {
+  id: string;
+  name: string;
+  price?: number;
+  description?: string;
+  note?: string;
+  prices?: { label: string; amount: number }[];
+};
+
+// ─── STARTERS ──────────────────────────────────────────────────────────────────
+
+export const STARTERS: SimpleMenuItem[] = [
+  {
+    id: "mozz-sticks",
+    name: "Mozzarella Sticks",
+    description: "Served with marinara sauce",
+  },
+  {
+    id: "jal-poppers",
+    name: "Jalapeño Poppers",
+    description: "Cream cheese filled jalapeños served with ranch",
+  },
+  {
+    id: "popcorn-shrimp",
+    name: "Crispy Popcorn Shrimp",
+    description: "Served with cocktail sauce",
+  },
+  {
+    id: "chicken-tenders-starter",
+    name: "Chicken Tenders",
+    description: "Served with plum sauce",
+  },
+  {
+    id: "garlic-bread-cheese",
+    name: "Garlic Bread with Cheese",
+    description: "Add Bacon +$2",
+  },
+  {
+    id: "bruschetta-starter",
+    name: "Bruschetta",
+    description: "Toasted garlic bread topped with tomato bruschetta mix, parmesan",
+  },
+  {
+    id: "spinach-dip",
+    name: "Spinach Dip",
+    description: "Creamy spinach dip served with tortilla chips & Naan Bread",
+  },
+  {
+    id: "royal-nachos",
+    name: "Royal Nachos",
+    description: "Loaded with cheese, tomatoes, onions, jalapeños & green peppers (Add Chicken or Beef)",
+  },
+];
+
+// ─── SIDES ─────────────────────────────────────────────────────────────────────
+
+export const SIDES: SimpleMenuItem[] = [
+  { id: "fries", name: "Crispy Fries", price: 6.93, note: "Medium +$2" },
+  { id: "rings", name: "Onion Rings", price: 8.93, note: "Medium +$2" },
+  { id: "wedges", name: "Seasoned Potato Wedges", price: 8.93, note: "Medium +$2" },
+];
+
+// ─── WINGS ─────────────────────────────────────────────────────────────────────
+
+export const WINGS: SimpleMenuItem[] = [
+  {
+    id: "w1",
+    name: "1 LB Wings (8–10 Wings/LB)",
+    price: 15.93,
+    description: "1 Sauce of Choice",
+  },
+  {
+    id: "w2",
+    name: "2 LB Wings (8–10 Wings/LB)",
+    price: 27.93,
+    description: "1 Sauce of Choice",
+  },
+  {
+    id: "w3",
+    name: "3 LB Wings (8–10 Wings/LB)",
+    price: 40.93,
+    description: "2 Sauces of Choice",
+  },
+  {
+    id: "w5",
+    name: "5 LB Wings (8–10 Wings/LB)",
+    price: 62.93,
+    description: "3 Sauces of Choice",
+  },
+];
+
+export const WING_SAUCES =
+  "Hot, Medium, Mild, BBQ, Honey Garlic, Hot Honey, Sweet Chilli, Hot Honey Garlic";
+
+// ─── SALADS ────────────────────────────────────────────────────────────────────
+
+export const SALADS: SimpleMenuItem[] = [
+  {
+    id: "caesar",
+    name: "Caesar Salad",
+    description: "Romaine Lettuce, Bacon, Caesar Dressing, Croutons",
+    note: "$2 for Large",
+    prices: [
+      { label: "Regular", amount: 11.93 },
+      { label: "Large", amount: 13.93 },
+    ],
+  },
+  {
+    id: "greek",
+    name: "Greek Salad",
+    description: "Round Lettuce, Tomatoes, Onions, Black Olives, Greek Dressing, Feta Cheese",
+    note: "$2 for Large",
+    prices: [
+      { label: "Regular", amount: 11.93 },
+      { label: "Large", amount: 13.93 },
+    ],
+  },
+  {
+    id: "garden",
+    name: "Garden Salad",
+    description: "Romaine Lettuce, Onions, Carrots, Cucumbers, Tomatoes, Italian Dressing, A little Honey Mustard",
+    note: "$2 for Large",
+    prices: [
+      { label: "Regular", amount: 11.93 },
+      { label: "Large", amount: 13.93 },
+    ],
+  },
+];
+
+// ─── CLASSIC PIZZAS ────────────────────────────────────────────────────────────
 
 export type SpecialtyPizza = {
   id: string;
@@ -42,7 +176,7 @@ export type SpecialtyPizza = {
 };
 
 export const PIZZA_SIZE_LEGEND =
-  "S = 10\" / 6 slices · M = 12\" / 8 slices · L = 14\" / 10 slices · XL = 16\" / 12 slices · P = 18\" / 14 slices";
+  "Small · Medium · Large · Jumbo · Party";
 
 export const SPECIALTY_PIZZAS: SpecialtyPizza[] = [
   {
@@ -50,148 +184,132 @@ export const SPECIALTY_PIZZAS: SpecialtyPizza[] = [
     name: "Royal Special",
     startingAt: 16.93,
     sauce: "Tomato",
-    toppings:
-      "Double Mozzarella cheese, Pepperoni, Mushrooms, Bacon & Green peppers",
+    toppings: "Pepperoni, Mushrooms, Green Peppers, Bacon & Extra Cheese",
     prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
-  },
-  {
-    id: "royal-cheese",
-    name: "The Royal Cheese",
-    startingAt: 12.93,
-    sauce: "Tomato",
-    toppings: "Mozzarella cheese",
-    prices: { S: 12.93, M: 16.93, L: 20.93, XL: 24.93, P: 28.93 },
-  },
-  {
-    id: "royal-pepperoni",
-    name: "The Royal Pepperoni",
-    startingAt: 13.93,
-    sauce: "Tomato",
-    toppings: "Mozzarella cheese & Pepperoni",
-    prices: { S: 13.93, M: 17.93, L: 21.93, XL: 25.93, P: 29.93 },
-  },
-  {
-    id: "hawaiian-king",
-    name: "Hawaiian King",
-    startingAt: 15.93,
-    sauce: "Tomato",
-    toppings: "Double Mozzarella cheese, Ham & Pineapple",
-    prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
-  },
-  {
-    id: "spicy-italian",
-    name: "Spicy Italian",
-    startingAt: 15.93,
-    sauce: "Tomato",
-    toppings: "Mozzarella cheese, Hot Italian Sausage, Onions & Green Pepper",
-    drizzle: "Hot",
-    prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
   },
   {
     id: "canadian",
-    name: "Canadian Pizza",
+    name: "Canadian",
     startingAt: 15.93,
     sauce: "Tomato",
-    toppings: "Mozzarella cheese, Pepperoni, Mushrooms & Bacon",
+    toppings: "Pepperoni, Mushrooms & Bacon",
     prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
   },
   {
-    id: "bbq-chicken",
-    name: "Majestic BBQ Chicken",
-    startingAt: 16.93,
-    sauce: "BBQ",
-    toppings: "Mozzarella cheese, Crispy chicken, Onions & Green Peppers",
-    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
-  },
-  {
-    id: "garlic-chicken",
-    name: "Garlic Chicken Delight",
-    startingAt: 16.93,
+    id: "creamy-garlic-chicken",
+    name: "Creamy Garlic Chicken",
+    startingAt: 17.93,
     sauce: "Creamy Garlic",
-    toppings: "Mozzarella cheese, Crispy chicken, Onions & Green Pepper",
-    choiceOfDrizzle: "Hot or BBQ",
-    prices: { S: 16.93, M: 21.93, L: 25.93, XL: 29.93, P: 33.93 },
+    toppings: "Chicken, Onions, Mushroom & Green Peppers",
+    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 35.93 },
   },
   {
-    id: "four-cheese",
-    name: "Four Cheese Delight",
-    startingAt: 16.93,
-    sauce: "Tomato",
-    toppings: "Mozzarella, Cheddar, Parmesan & Feta Cheese",
-    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
-  },
-  {
-    id: "hockey",
-    name: "Hockey Pizza",
+    id: "meat-lovers",
+    name: "Meat Lovers",
     startingAt: 17.93,
     sauce: "Tomato",
-    toppings: "Double Mozzarella cheese, Double Pepperoni & Mushrooms",
-    prices: { S: 17.93, M: 22.93, L: 26.93, XL: 30.93, P: 35.93 },
-  },
-  {
-    id: "pesto-chicken",
-    name: "Pesto Chicken",
-    startingAt: 17.93,
-    sauce: "Pesto",
-    toppings: "Mozzarella cheese, Crispy chicken, Spinach, Red Peppers & Onions",
-    prices: { S: 17.93, M: 22.93, L: 26.93, XL: 30.93, P: 35.93 },
+    toppings: "Pepperoni, Ham, Sausage, Bacon & Beef",
+    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 35.93 },
   },
   {
     id: "veggie-delight",
     name: "Veggie Delight",
     startingAt: 17.93,
     sauce: "Tomato",
-    toppings:
-      "Mozzarella cheese, Mushrooms, Green Peppers, Onions, Tomatoes & Black Olives",
-    prices: { S: 17.93, M: 22.93, L: 26.93, XL: 30.93, P: 35.93 },
+    toppings: "Mushrooms, Onions, Green Peppers, Green Olives & Tomatoes",
+    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 35.93 },
   },
   {
-    id: "med-veggie",
-    name: "Mediterranean Veggie",
-    startingAt: 17.93,
+    id: "hawaiian",
+    name: "Hawaiian",
+    startingAt: 15.93,
     sauce: "Tomato",
-    toppings:
-      "Mozzarella cheese, Feta cheese, Black Olive, Onion, Sun-Dried Tomato & Spinach",
-    prices: { S: 17.93, M: 22.93, L: 26.93, XL: 30.93, P: 35.93 },
-  },
-  {
-    id: "meat-lovers",
-    name: "Meat Lovers' Dream",
-    startingAt: 16.93,
-    sauce: "Tomato",
-    toppings: "Mozzarella cheese, Pepperoni, Sausage, Bacon, Ham & Beef",
-    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
-  },
-  {
-    id: "greek",
-    name: "Greek Pizza",
-    startingAt: 16.93,
-    sauce: "Tomato",
-    toppings: "Mozzarella cheese, Black Olives, Onions, Tomatoes & Feta Cheese",
-    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
+    toppings: "Ham, Pineapple & Extra Cheese",
+    prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
   },
 ];
+
+// ─── SIGNATURE PIZZAS ──────────────────────────────────────────────────────────
+
+export type SignaturePizza = {
+  id: string;
+  name: string;
+  toppings: string;
+  prices: { label: string; amount: number }[];
+};
+
+export const SIGNATURE_PIZZAS: SignaturePizza[] = [
+  {
+    id: "vodka-sauce-pizza",
+    name: "Vodka Sauce Pizza",
+    toppings: "Vodka sauce, mozzarella, cup & char pepperoni, parmigiano, basil & hot honey drizzle",
+    prices: [
+      { label: "Small", amount: 17.93 },
+      { label: "Medium", amount: 21.93 },
+    ],
+  },
+  {
+    id: "rosee-sauce-pizza",
+    name: "Rosée Sauce Pizza",
+    toppings: "Rosé sauce, mozzarella, Italian sausage, ricotta, parmesan & basil",
+    prices: [
+      { label: "Small", amount: 17.93 },
+      { label: "Medium", amount: 21.93 },
+    ],
+  },
+  {
+    id: "spicy-italian-sig",
+    name: "Spicy Italian",
+    toppings: "Tomato sauce, mozzarella, calabrese salami, green peppers, banana peppers, chili flakes & hot honey",
+    prices: [
+      { label: "Small", amount: 17.93 },
+      { label: "Medium", amount: 22.43 },
+    ],
+  },
+  {
+    id: "burrata-margherita",
+    name: "Burrata Margherita",
+    toppings: "Tomato sauce, fresh mozzarella, burrata, basil & olive oil",
+    prices: [
+      { label: "Small", amount: 16.93 },
+      { label: "Medium", amount: 21.43 },
+    ],
+  },
+  {
+    id: "truffle-mushroom",
+    name: "Truffle Mushroom",
+    toppings: "Roasted garlic cream sauce, mozzarella, roasted mushrooms, parmesan, truffle oil",
+    prices: [
+      { label: "Small", amount: 16.93 },
+      { label: "Medium", amount: 21.43 },
+    ],
+  },
+];
+
+// ─── BUILD YOUR OWN PIZZA ──────────────────────────────────────────────────────
 
 export const BUILD_YOUR_OWN_TIERS: {
   label: string;
   prices: PizzaPrices;
 }[] = [
-  { label: "Cheese Only", prices: { S: 12.93, M: 17.0, L: 20.93, XL: 24.93, P: 28.93 } },
-  { label: "1 Topping", prices: { S: 13.93, M: 18.0, L: 21.93, XL: 25.93, P: 29.93 } },
-  { label: "2 Toppings", prices: { S: 14.93, M: 19.0, L: 22.93, XL: 26.93, P: 30.93 } },
-  { label: "3 Toppings", prices: { S: 15.93, M: 20.0, L: 23.93, XL: 27.93, P: 31.93 } },
-  { label: "4 Toppings", prices: { S: 16.93, M: 21.0, L: 24.93, XL: 28.93, P: 32.93 } },
+  { label: "Base (Mozza Cheese)", prices: { S: 12.93, M: 16.93, L: 20.93, XL: 24.93, P: 28.93 } },
 ];
+
+export const BYO_TOPPING_PRICING = {
+  firstFour: "$1 each (any size)",
+  additional: "Small ($1) · Medium ($1.50) · Large ($2) · Jumbo ($2.50) · Party ($3)",
+};
 
 export const BYO_TOPPINGS = {
   sauces: [
     "Pizza Sauce",
+    "Vodka Sauce",
+    "Rosée Sauce",
     "Creamy Garlic",
-    "Hot Sauce",
     "Pesto Sauce",
     "BBQ Sauce",
   ],
-  additionalCheeses: ["Feta", "Cheddar", "Parmesan"],
+  additionalCheeses: ["Feta", "Parmesan", "Cheddar"],
   vegetarian: [
     "Onions",
     "Green Peppers",
@@ -205,121 +323,174 @@ export const BYO_TOPPINGS = {
     "Sweet Corn",
   ],
   nonVegetarian: [
-    "Crispy Chicken",
+    "Crispy Chicken (2 Toppings)",
     "Pepperoni",
     "Sausage",
+    "Spicy Calabrese",
     "Ground Beef",
     "Ham",
-    "Bacon",
+    "Bacon bits",
+    "Bacon Strips (2 Toppings)",
     "Crispy Veal",
-    "Roast Beef",
-    "Corned Beef",
     "Salami",
   ],
 } as const;
 
 export const BYO_EXTRAS: { name: string; prices: PizzaPrices }[] = [
   {
-    name: "Different Sauce on Base",
+    name: "Different Sauce on Base (counts as 1 topping)",
     prices: { S: 1.0, M: 1.5, L: 2.0, XL: 2.5, P: 3.0 },
   },
   {
-    name: "Additional Toppings",
+    name: "Additional Cheese (Feta / Parmesan / Cheddar — each counts as 1 topping)",
     prices: { S: 1.0, M: 1.5, L: 2.0, XL: 2.5, P: 3.0 },
   },
   {
     name: "Extra Cheese",
-    prices: { S: 1.5, M: 2.0, L: 2.5, XL: 3.0, P: 4.0 },
-  },
-  {
-    name: "Drizzle on Top",
-    prices: { S: 0.5, M: 1.0, L: 1.5, XL: 2.0, P: 2.5 },
+    prices: { S: 1.0, M: 1.5, L: 2.0, XL: 2.5, P: 3.0 },
   },
 ];
 
-export type SimpleMenuItem = {
-  id: string;
-  name: string;
-  price?: number;
-  description?: string;
-  prices?: { label: string; amount: number }[];
+// ─── PASTAS ────────────────────────────────────────────────────────────────────
+
+export const PASTAS: SimpleMenuItem[] = [
+  {
+    id: "marinara-spaghetti",
+    name: "Marinara Spaghetti",
+    price: 11.93,
+    description: "Marinara Sauce, Spaghetti, Parmesan",
+  },
+  {
+    id: "baked-lasagna",
+    name: "Baked Lasagna",
+    price: 14.93,
+    description: "House baked lasagna topped with mozzarella & Pepperoni",
+  },
+  {
+    id: "baked-ravioli",
+    name: "Baked Ravioli",
+    price: 15.93,
+    description: "Marinara Sauce, Beef Ravioli, Mozzarella & Pepperoni",
+  },
+];
+
+export const SIGNATURE_PASTAS: SimpleMenuItem[] = [
+  {
+    id: "royal-vodka-rigatoni",
+    name: "Royal Vodka Rigatoni",
+    price: 16.43,
+    description: "Spicy and tangy vodka sauce, parmesan & bacon",
+  },
+  {
+    id: "spicy-sausage-rigatoni",
+    name: "Spicy Sausage Rigatoni",
+    price: 16.43,
+    description: "Rosé sauce, Italian sausage, chili flakes & parmesan",
+  },
+  {
+    id: "mushroom-fettuccine",
+    name: "Mushroom Fettuccine Alfredo",
+    price: 14.93,
+    description: "Creamy alfredo sauce, roasted mushrooms & parmesan",
+  },
+  {
+    id: "chicken-veal-parm-spag",
+    name: "Chicken Parm / Veal Parm Spaghetti",
+    price: 17.93,
+    description: "Marinara Sauce, Spaghetti, Crispy Chicken or Veal Cutlet, Mozzarella & Parmesan",
+  },
+];
+
+export const PASTA_ADDONS: SimpleMenuItem[] = [
+  { id: "pasta-meat", name: "Add Meat", price: 1.5 },
+  { id: "pasta-meatballs", name: "Add Meatballs", price: 5.0 },
+  { id: "pasta-side-meatballs", name: "Side Order of Meatballs", price: 7.0 },
+];
+
+export const BUILD_YOUR_OWN_PASTA = {
+  startingAt: 11.93,
+  pastas: ["Penne", "Rigatoni", "Spaghetti", "Fettuccine", "Ravioli (+$1)"],
+  sauces: ["Marinara", "Rosé (+$2)", "Alfredo (+$2)", "Vodka (+$2)"],
+  proteins: [
+    "Crispy Chicken or Veal Cutlet (+$4)",
+    "Beef, Sausage or Bacon (+$1.50)",
+    "Meatballs (+$5)",
+  ],
+  wayToCook: [
+    "Baked — Loaded with Mozzarella & Pepperoni (+$2)",
+    "Just in Sauce (No Cheese)",
+    "Topped with just Parmesan (+$1)",
+    "Topped with Mozzarella and Parmesan (+$2)",
+  ],
 };
 
-export const SUBS: SimpleMenuItem[] = [
+export const PASTA_EXTRAS: SimpleMenuItem[] = [
+  { id: "dbl-cheese", name: "Double Cheese", price: 2.0 },
+  { id: "ex-meatballs", name: "Extra Meatballs", price: 5.0 },
+];
+
+// ─── SUBS & SANDWICHES ─────────────────────────────────────────────────────────
+
+export const SANDWICHES: SimpleMenuItem[] = [
   {
-    id: "super-chicken",
-    name: "Super Chicken Sub",
+    id: "crispy-chicken-sandwich",
+    name: "Crispy Chicken Sandwich",
     price: 15.93,
-    description: "Cheese, Lettuce, Tomato, Mayonnaise, Chicken",
+    description: "Brioche Bun, Crispy chicken, Swiss Cheese, lettuce, tomato, pickles & royal sauce",
+    note: "Comes with a choice of Side (Fries, Onion Rings or Wedges)",
   },
+  {
+    id: "brisket-sandwich",
+    name: "Brisket Sandwich",
+    price: 15.93,
+    description: "Brioche Bun, Slow smoked brisket, Sautéed onions & Mushrooms, cheddar & Hot Honey BBQ",
+    note: "Comes with a choice of Side (Fries, Onion Rings or Wedges)",
+  },
+  {
+    id: "veal-sandwich",
+    name: "Veal Sandwich",
+    price: 15.93,
+    description: "Brioche Bun, Breaded veal, Marinara Sauce & Swiss Cheese",
+    note: "Comes with a choice of Side (Fries, Onion Rings or Wedges)",
+  },
+];
+
+export const SUBS: SimpleMenuItem[] = [
   {
     id: "super-assorted",
     name: "Super Assorted Sub",
     price: 13.93,
-    description:
-      "Cheese, Lettuce, Tomatoes, Onions, Sub Sauce, Italian Sauce, Salami, Ham, Extra Salami, Extra Ham",
+    description: "Sub Bread Foot Long, Cheese, Lettuce, Tomatoes, Onions, Ham, Salami, Italian Dressing & Sub Sauce",
   },
   {
-    id: "rib",
-    name: "Rib Sub",
+    id: "meatball-sub",
+    name: "Meatball Sub",
     price: 13.93,
-    description:
-      "Cheese, Lettuce, Tomato, Sub Sauce, Italian Sauce, Onions, Salami & Ham",
+    description: "Sub Bread Foot Long, Cheese, Meatballs & Marinara Sauce",
   },
   {
-    id: "salami",
-    name: "Salami Sub",
-    price: 12.93,
-    description: "Cheese, Lettuce, Tomato, Onions, Sub Sauce, Salamis",
+    id: "rib-sub",
+    name: "Rib Sub",
+    price: 14.93,
+    description: "Sub Bread Foot Long, Cheese, Ribs & BBQ Sauce",
   },
   {
-    id: "ham",
-    name: "Ham Sub",
-    price: 12.93,
-    description: "Cheese, Lettuce, Sub Sauce, Italian Sauce, Ham",
+    id: "club-sub",
+    name: "Club Sub",
+    price: 13.93,
+    description: "Sub Bread Foot Long, Cheese, Lettuce, Tomatoes, Ham, Salami, Bacon Strips & Mayo",
   },
   {
     id: "blt",
-    name: "BLT Sub",
+    name: "BLT",
     price: 13.93,
-    description: "Cheese, Lettuce, Mayonnaise, Tomato & Bacon",
+    description: "Sub Bread Foot Long, Cheese, Lettuce, Tomatoes, Bacon Strips & Mayo",
   },
   {
-    id: "club",
-    name: "Club Sub",
-    price: 13.93,
-    description:
-      "Cheese, Lettuce, Mayonnaise, Tomato, Turkey, Bacon, Ham",
-  },
-  {
-    id: "corned-beef",
-    name: "Corned Beef Sub",
-    price: 13.93,
-    description: "Corned Beef, Mustard Sauce & Cheese",
-  },
-  {
-    id: "roast-beef",
-    name: "Roast Beef Sub",
-    price: 13.93,
-    description: "Roast Beef, Mustard Sauce & Cheese",
-  },
-  {
-    id: "meatball",
-    name: "Meatball Sub",
-    price: 13.93,
-    description: "Meatballs, Meat Sauce & Cheese",
-  },
-  {
-    id: "pizza-sub",
-    name: "Pizza Sub",
-    price: 12.93,
-    description: "Salami, Pizza Sauce, Onions & Cheese",
-  },
-  {
-    id: "turkey",
-    name: "Turkey Sub",
-    price: 13.93,
-    description: "Cheese, Lettuce, Tomato, Mayonnaise & Turkey",
+    id: "philly-cheesesteak",
+    name: "Philly Cheese Steak",
+    price: 14.93,
+    description: "Sub Bread Foot Long, Cheese, Steak, Sautéed Mushrooms, Green Peppers & Onions",
   },
 ];
 
@@ -329,30 +500,7 @@ export const SUB_EXTRAS: SimpleMenuItem[] = [
   { id: "ex-cheese-sub", name: "Extra Cheese", price: 1.0 },
 ];
 
-export const PASTAS: SimpleMenuItem[] = [
-  { id: "spaghetti", name: "Spaghetti", price: 12.93 },
-  { id: "spaghetti-meatball", name: "Spaghetti with Meatballs", price: 12.93 },
-  { id: "rigatoni", name: "Rigatoni", price: 12.93 },
-  { id: "lasagna", name: "Baked Lasagna", price: 13.93 },
-  { id: "baked-spaghetti", name: "Baked Spaghetti", price: 13.93 },
-  { id: "baked-rigatoni", name: "Baked Rigatoni", price: 13.93 },
-  { id: "baked-ravioli", name: "Baked Ravioli", price: 14.93 },
-  {
-    id: "veal-parm",
-    name: "Veal Parmesan with Spaghetti and Cheese",
-    price: 15.93,
-  },
-  {
-    id: "chicken-parm",
-    name: "Chicken Parmesan with Spaghetti and Cheese",
-    price: 17.93,
-  },
-];
-
-export const PASTA_EXTRAS: SimpleMenuItem[] = [
-  { id: "dbl-cheese", name: "Double Cheese", price: 2.0 },
-  { id: "ex-meatballs", name: "Extra Meatballs", price: 5.0 },
-];
+// ─── GARLIC BREADS ─────────────────────────────────────────────────────────────
 
 export const GARLIC_BREADS: SimpleMenuItem[] = [
   { id: "plain-gb", name: "Plain Garlic Bread", price: 2.93 },
@@ -375,71 +523,15 @@ export const GARLIC_BREADS: SimpleMenuItem[] = [
   },
 ];
 
-export const WINGS: SimpleMenuItem[] = [
-  {
-    id: "w1",
-    name: "1 Pound Wings with 1 Sauce of Choice",
-    price: 14.93,
-  },
-  {
-    id: "w2",
-    name: "2 Pound Wings with 1 Sauce of Choice",
-    price: 27.93,
-  },
-  {
-    id: "w3",
-    name: "3 Pound Wings with 2 Sauce of Choice",
-    price: 40.93,
-  },
-  {
-    id: "w5",
-    name: "5 Pound Wings with 2 Sauce of Choice",
-    price: 62.93,
-  },
+// ─── DESSERTS ─────────────────────────────────────────────────────────────────
+
+export const DESSERTS: SimpleMenuItem[] = [
+  { id: "brownies", name: "Pack of Brownies", price: 2.99 },
+  { id: "tiramisu", name: "Tiramisu", price: 11.93 },
+  { id: "lava", name: "Choco Lava Cake", price: 11.93 },
 ];
 
-export const WING_SAUCES =
-  "Hot, Medium, Mild, Buffalo, BBQ, Honey Garlic";
-
-export const SALADS: SimpleMenuItem[] = [
-  {
-    id: "chef",
-    name: "Chef Salad",
-    description: "Iceberg Lettuce, Tomato, Italian Sauce",
-    prices: [
-      { label: "Medium", amount: 9.93 },
-      { label: "Large", amount: 11.93 },
-    ],
-  },
-  {
-    id: "caesar",
-    name: "Caesar Salad",
-    description:
-      "Romaine Lettuce, Creamy Caesar Dressing, Double-Smoked Bacon, Croutons, Parmesan Cheese",
-    prices: [
-      { label: "Medium", amount: 10.93 },
-      { label: "Large", amount: 12.93 },
-    ],
-  },
-  {
-    id: "greek",
-    name: "Greek Salad",
-    description:
-      "Iceberg Lettuce, Creamy Greek Dressing, Tomato, Black Olives, Feta Cheese",
-    prices: [
-      { label: "Medium", amount: 11.93 },
-      { label: "Large", amount: 12.93 },
-    ],
-  },
-];
-
-export const SIDES: SimpleMenuItem[] = [
-  { id: "fingers", name: "Chicken Fingers", price: 14.93 },
-  { id: "rings", name: "Onion Rings", price: 7.93 },
-  { id: "poppers", name: "Jalapeño Poppers", price: 8.93 },
-  { id: "fries", name: "Fries", price: 6.93 },
-  { id: "mozz", name: "Mozzarella Sticks", price: 8.93 },
-];
+// ─── DRINKS & DIPS ─────────────────────────────────────────────────────────────
 
 export const DIPS_LIST =
   "Creamy Garlic, Jalapeño Cheddar, Hot, Honey Garlic, BBQ, Mild, Medium — $1 each";
@@ -447,11 +539,7 @@ export const DIPS_LIST =
 export const BEVERAGES_LIST =
   "Coke, Diet Coke, Coke Zero, Ginger Ale, Ginger Ale Zero, Sprite, Nestea, Root Beer — $1.99 each";
 
-export const DESSERTS: SimpleMenuItem[] = [
-  { id: "brownies", name: "Pack of Brownies", price: 2.99 },
-  { id: "tiramisu", name: "Tiramisu", price: 11.93 },
-  { id: "lava", name: "Choco Lava Cake", price: 11.93 },
-];
+// ─── PIZZA DEALS ───────────────────────────────────────────────────────────────
 
 export type PizzaDeal = {
   id: string;
@@ -511,8 +599,7 @@ export const PIZZA_DEALS: PizzaDeal[] = [
     id: "traditional",
     title: "Traditional Royal Special",
     price: 49.99,
-    description:
-      "1 Large Royal Special Pizza, 1 LB Wings, 1 Garlic Bread with Cheese, 2 Cans of Pop",
+    description: "1 Large Royal Special Pizza, 1 LB Wings, 1 Garlic Bread with Cheese, 2 Cans of Pop",
     image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
     imageAlt: "Royal special pizza with wings and garlic bread",
     badge: "Fan Favourite",
@@ -521,8 +608,7 @@ export const PIZZA_DEALS: PizzaDeal[] = [
     id: "family",
     title: "Royal Family Deal",
     price: 54.99,
-    description:
-      "2 Medium Pizzas with 3 Toppings each, 1 LB Wings, 4 Cans of Pop",
+    description: "2 Medium Pizzas with 3 Toppings each, 1 LB Wings, 4 Cans of Pop",
     image: "https://images.unsplash.com/photo-1555072956-7758afb20e8f?w=800&q=80",
     imageAlt: "Family deal with pizzas and wings",
     badge: "Family Pick",
@@ -532,68 +618,68 @@ export const PIZZA_DEALS: PizzaDeal[] = [
     title: "Royal Get-Together",
     price: 49.99,
     description: "2 Large Pizzas with 3 Toppings each, 2-liter Coke",
-    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1170&auto=format&fit=crop",
     imageAlt: "Two large pizzas and a bottle of Coke",
   },
   {
     id: "game",
     title: "Royal Game Special",
     price: 99.99,
-    description:
-      "2 Extra Large Pizzas 3 Toppings each, 2 LB Wings, 2 Fries, 2-liter Coke",
-       image: "https://images.unsplash.com/photo-1593504049359-74330189a345?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    description: "2 Extra Large Pizzas 3 Toppings each, 2 LB Wings, 2 Fries, 2-liter Coke",
+    image: "https://images.unsplash.com/photo-1593504049359-74330189a345?q=80&w=627&auto=format&fit=crop",
+    imageAlt: "Two large pizzas and wings game night special",
   },
   {
     id: "party",
     title: "Royal Party Special",
     price: 109.99,
-    description:
-      "2 Party Size Pizzas with 3 Toppings each, 2 LB Wings, 2 Garlic Breads with Cheese, 2-litre Coke",
-       image: "https://images.unsplash.com/photo-1613564834361-9436948817d1?q=80&w=743&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    description: "2 Party Size Pizzas with 3 Toppings each, 2 LB Wings, 2 Garlic Breads with Cheese, 2-litre Coke",
+    image: "https://images.unsplash.com/photo-1613564834361-9436948817d1?q=80&w=743&auto=format&fit=crop",
+    imageAlt: "Party special with pizzas, wings and garlic bread",
   },
   {
     id: "kids",
     title: "Royal Kids Special",
     price: 21.99,
     description: "Small Pizza with 2 Toppings, 1 Fries, and a Can of Pop",
-     image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=1170&auto=format&fit=crop",
+    imageAlt: "Kids special pizza with fries",
   },
   {
     id: "med-wings",
     title: "Medium Pizza with Wings",
     price: 34.99,
     description: "Medium Pizza with 3 Toppings, 1 LB Wings, and 2 Cans of Pop",
-     image: "https://images.unsplash.com/photo-1682264788192-9abdec90c425?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    image: "https://images.unsplash.com/photo-1682264788192-9abdec90c425?q=80&w=1974&auto=format&fit=crop",
+    imageAlt: "Medium pizza with wings deal",
   },
   {
     id: "sub-special",
     title: "Royal Sub Special",
     price: 12.93,
     description: "Any Non-Super Sub with a Pop",
-     image: "https://images.unsplash.com/photo-1669895616443-5d21d5acc6e0?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    image: "https://images.unsplash.com/photo-1669895616443-5d21d5acc6e0?q=80&w=1025&auto=format&fit=crop",
+    imageAlt: "Royal sub special",
   },
   {
     id: "2lasagna",
     title: "2 Baked Lasagnas",
     price: 29.99,
     description: "2 Baked Lasagnas with 2 Cans of Pop",
-     image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?q=80&w=1025&auto=format&fit=crop",
+    imageAlt: "Two baked lasagnas",
   },
   {
     id: "2spag",
     title: "2 Baked Spaghettis",
     price: 29.99,
     description: "2 Baked Spaghettis with 2 Cans of Pop",
-     image: "https://images.unsplash.com/photo-1606152196365-d1ce5ea838b5?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    imageAlt: "Two large pizzas and a bottle of Coke",
+    image: "https://images.unsplash.com/photo-1606152196365-d1ce5ea838b5?q=80&w=687&auto=format&fit=crop",
+    imageAlt: "Two baked spaghettis",
   },
 ];
+
+// ─── WHY SECTIONS ──────────────────────────────────────────────────────────────
 
 export type WhySection = {
   id: string;
@@ -640,7 +726,7 @@ export const WHY_SECTIONS: WhySection[] = [
 ];
 
 export type ComparisonRow = {
-   label: string;
+  label: string;
   royal: string;
   chain: string;
 };
@@ -673,49 +759,38 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   },
 ];
 
+// ─── NAVIGATION / HOME ─────────────────────────────────────────────────────────
+
 export const HOME_FEATURED_CATEGORIES = [
   { id: "pizzas", label: "Authentic Pizzas", href: "/menu?category=pizzas" },
-  { id: "subs", label: "Toasted Subs & Rolls", href: "/menu?category=subs" },
+  { id: "subs", label: "Toasted Subs & Sandwiches", href: "/menu?category=subs" },
   { id: "wings", label: "Saucy Wings", href: "/menu?category=wings" },
   { id: "pastas", label: "Creamy Pastas", href: "/menu?category=pastas" },
+  { id: "starters", label: "Starters & Sides", href: "/menu?category=starters" },
+  { id: "salads", label: "Fresh Salads", href: "/menu?category=salads" },
   { id: "garlic", label: "Oven-Baked Garlic Breads", href: "/menu?category=garlic-breads" },
-  { id: "salads", label: "Fresh Bowls of salads", href: "/menu?category=salads" },
-  {
-    id: "sides",
-    label: "Sides & Desserts",
-    href: "/menu?category=sides",
-    
-  },
-   {
-    id: "sides",
-    label: "Drinks",
-    href: "/menu?category=sides",
-    
-  },
-  
+  { id: "drinks", label: "Drinks & Dips", href: "/menu?category=drinks-dips" },
 ] as const;
 
 export type MenuCategoryId =
+  | "starters"
   | "pizzas"
+  | "signature-pizzas"
   | "build-your-own"
   | "subs"
   | "pastas"
-  | "garlic-breads"
   | "wings"
   | "salads"
-  | "sides"
-  | "desserts"
-  | "drinks-dips";
+  | "sides";
 
 export const MENU_CATEGORY_TABS: { id: MenuCategoryId; label: string }[] = [
-  { id: "pizzas", label: "Pizzas" },
+  { id: "starters", label: "Starters" },
+  { id: "pizzas", label: "Classic Pizzas" },
+  { id: "signature-pizzas", label: "Signature Pizzas" },
   { id: "build-your-own", label: "Build Your Own Pizza" },
-  { id: "subs", label: "Subs" },
+  { id: "subs", label: "Subs & Sandwiches" },
   { id: "pastas", label: "Pastas" },
-  { id: "garlic-breads", label: "Garlic Breads" },
   { id: "wings", label: "Wings" },
   { id: "salads", label: "Salads" },
   { id: "sides", label: "Sides" },
-  { id: "desserts", label: "Desserts" },
-  { id: "drinks-dips", label: "Drinks / Dips" },
 ];

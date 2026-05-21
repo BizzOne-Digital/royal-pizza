@@ -5,135 +5,255 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
-  BEVERAGES_LIST,
-  BUILD_YOUR_OWN_TIERS,
-  BYO_EXTRAS,
+  BUILD_YOUR_OWN_PASTA,
   BYO_TOPPINGS,
-  DESSERTS,
-  DIPS_LIST,
-  GARLIC_BREADS,
   MENU_CATEGORY_TABS,
   type MenuCategoryId,
-  PASTA_EXTRAS,
+  PASTA_ADDONS,
   PASTAS,
   PIZZA_SIZE_LEGEND,
   SALADS,
+  SANDWICHES,
   SIDES,
+  SIGNATURE_PASTAS,
+  SIGNATURE_PIZZAS,
   SPECIALTY_PIZZAS,
+  STARTERS,
   SUBS,
   SUB_EXTRAS,
   WING_SAUCES,
   WINGS,
+  BUILD_YOUR_OWN_TIERS,
+  BYO_EXTRAS,
+  BYO_TOPPING_PRICING,
 } from "@/data/menu";
-import { MENU_INTRO } from "@/data/site-content";
 import { CategoryTabs } from "./CategoryTabs";
-import { SimpleItemCard, SpecialtyPizzaCard } from "./MenuCard";
+import {
+  SimpleItemCard,
+  SpecialtyPizzaCard,
+  SignaturePizzaCard,
+  WingsCard,
+  StarterCard,
+} from "./MenuCard";
+import { useCart } from "@/context/CartContext";
+import { formatCurrency } from "@/lib/format";
+import { AnimatePresence as AP } from "framer-motion";
 
-const panelTransition = { duration: 0.38, ease: [0.22, 1, 0.36, 1] as const };
+const ease = [0.22, 1, 0.36, 1] as const;
+const panel = { duration: 0.36, ease };
 
-const CATEGORY_IMAGES: Record<string, { src: string; alt: string }> = {
+// ─── HERO DATA ────────────────────────────────────────────────────────────────
+const HERO: Record<string, { src: string; alt: string; tagline: string }> = {
+  starters: {
+    src: "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=1400&q=80",
+    alt: "Starters and appetizers",
+    tagline: "The perfect way to begin — shareable, crispy, and deeply satisfying.",
+  },
   pizzas: {
     src: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1400&q=80",
-    alt: "Fresh baked specialty pizza",
+    alt: "Fresh baked classic pizza",
+    tagline: "Stone-baked to perfection — crisp where it counts, soft where it matters.",
+  },
+  "signature-pizzas": {
+    src: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1400&q=80",
+    alt: "Signature gourmet pizza",
+    tagline: "Elevated combinations — our chef's most distinctive creations.",
   },
   "build-your-own": {
     src: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1400&q=80",
-    alt: "Build your own pizza toppings",
+    alt: "Build your own pizza",
+    tagline: "Your crust. Your sauce. Your toppings. Built your way.",
   },
   subs: {
     src: "https://images.unsplash.com/photo-1555072956-7758afb20e8f?w=1400&q=80",
-    alt: "Loaded toasted sub sandwich",
+    alt: "Loaded toasted sub",
+    tagline: "Loaded, toasted, and dressed like a main course.",
   },
   pastas: {
     src: "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=1400&q=80",
-    alt: "Rich creamy pasta dish",
-  },
-  "garlic-breads": {
-    src: "https://images.unsplash.com/photo-1619531040576-f9416740661f?w=1400&q=80",
-    alt: "Golden oven-baked garlic bread",
+    alt: "Rich creamy pasta",
+    tagline: "Baked until the cheese sings — rich, hearty, and deeply satisfying.",
   },
   wings: {
     src: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=1400&q=80",
-    alt: "Saucy crispy chicken wings",
+    alt: "Saucy chicken wings",
+    tagline: "Sauced to order. Every bite packs a punch.",
   },
   salads: {
     src: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1400&q=80",
-    alt: "Fresh crisp salad bowl",
+    alt: "Fresh crisp salad",
+    tagline: "Fresh, crisp bowls that actually fill you up.",
   },
   sides: {
     src: "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=1400&q=80",
-    alt: "Assorted sides and dips",
-  },
-  desserts: {
-    src: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=1400&q=80",
-    alt: "Delicious desserts",
-  },
-  "drinks-dips": {
-    src: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=1400&q=80",
-    alt: "Cold drinks and dipping sauces",
+    alt: "Sides and fries",
+    tagline: "The perfect companions — never an afterthought.",
   },
 };
 
-const CATEGORY_TAGLINES: Record<string, string> = {
-  pizzas: "Stone-baked to perfection — crisp where it counts, soft where it matters.",
-  "build-your-own": "Your crust. Your sauce. Your toppings. Built your way.",
-  subs: "Loaded, toasted, and dressed like a main course.",
-  pastas: "Baked until the cheese sings — rich, hearty, and deeply satisfying.",
-  "garlic-breads": "Kissed with butter and herbs — golden right out of the oven.",
-  wings: "Sauced to order. Every bite packs a punch.",
-  salads: "Fresh, crisp bowls that actually fill you up.",
-  sides: "The perfect companions — never an afterthought.",
-  desserts: "Finish it right. Sweet notes to close the feast.",
-  "drinks-dips": "Cold drinks and bold dips to round out every order.",
-};
-
-function matches(q: string, ...parts: (string | undefined)[]) {
-  if (!q.trim()) return true;
-  const needle = q.toLowerCase();
-  return parts.some((p) => (p ?? "").toLowerCase().includes(needle));
-}
-
-function CategoryHero({ categoryId }: { categoryId: string }) {
-  const img = CATEGORY_IMAGES[categoryId];
-  const tagline = CATEGORY_TAGLINES[categoryId];
-  if (!img) return null;
-
+function CategoryHero({ id }: { id: string }) {
+  const h = HERO[id];
+  if (!h) return null;
   return (
     <motion.div
-      key={categoryId}
-      initial={{ opacity: 0, scale: 1.03 }}
+      key={id}
+      initial={{ opacity: 0, scale: 1.04 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.55 }}
-      className="relative mb-10 overflow-hidden rounded-2xl border border-gold/20"
-      style={{ height: 220 }}
+      transition={{ duration: 0.5 }}
+      className="relative mb-8 overflow-hidden rounded-2xl border border-gold/15"
+      style={{ height: 200 }}
     >
-      <Image
-        src={img.src}
-        alt={img.alt}
-        fill
-        className="object-cover object-center"
-        sizes="(max-width:768px) 100vw, 1152px"
-        priority
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-charcoal/92 via-charcoal/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
-      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.2 }}
-          className="max-w-lg text-sm text-cream/85 md:text-base"
-        >
-          {tagline}
-        </motion.p>
-      </div>
+      <Image src={h.src} alt={h.alt} fill className="object-cover object-center" sizes="(max-width:768px) 100vw, 1152px" priority />
+      <div className="absolute inset-0 bg-gradient-to-r from-charcoal/95 via-charcoal/65 to-transparent" />
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18 }}
+        className="absolute bottom-5 left-6 max-w-lg text-sm text-cream/80 md:text-base"
+      >
+        {h.tagline}
+      </motion.p>
     </motion.div>
   );
 }
 
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <h2 className="font-display text-2xl text-cream">{children}</h2>
+      <div className="flex-1 h-px bg-gold/15" />
+    </div>
+  );
+}
+
+function SubTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 mt-6 mb-3">
+      <span className="h-4 w-0.5 rounded-full bg-gold/60" />
+      <h3 className="font-display text-lg text-gold">{children}</h3>
+    </div>
+  );
+}
+
+function matches(q: string, ...parts: (string | undefined)[]) {
+  if (!q.trim()) return true;
+  const n = q.toLowerCase();
+  return parts.some((p) => (p ?? "").toLowerCase().includes(n));
+}
+
+// ─── BUILD YOUR OWN PIZZA BUILDER ─────────────────────────────────────────────
+function ByoPizzaBuilder() {
+  const { addItem } = useCart();
+  const [size, setSize] = useState<"S" | "M" | "L" | "XL" | "P">("M");
+  const [toppings, setToppings] = useState<string[]>([]);
+  const [sauce, setSauce] = useState("Pizza Sauce");
+  const [added, setAdded] = useState(false);
+
+  const basePrices: Record<string, number> = { S: 12.93, M: 16.93, L: 20.93, XL: 24.93, P: 28.93 };
+  const extraPriceMap: Record<string, number> = { S: 1, M: 1.5, L: 2, XL: 2.5, P: 3 };
+  const basePrice = basePrices[size];
+  const firstFour = Math.min(toppings.length, 4);
+  const extra = Math.max(0, toppings.length - 4);
+  const toppingCost = firstFour * 1 + extra * (extraPriceMap[size] ?? 1);
+  const total = basePrice + toppingCost;
+
+  const toggleTopping = (t: string) =>
+    setToppings((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+
+  const sizeKeys = ["S", "M", "L", "XL", "P"] as const;
+  const sizeNames: Record<string, string> = { S: "Small", M: "Medium", L: "Large", XL: "Jumbo", P: "Party" };
+
+  const handleAdd = () => {
+    addItem({ id: `byo-${size}-${Date.now()}`, name: `Build Your Own Pizza (${sizeNames[size]})`, category: "pizza", price: total, size: sizeNames[size] });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-[#1c1a14] to-charcoal/90 p-6 space-y-5">
+      {/* Size */}
+      <div>
+        <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">Choose Size</p>
+        <div className="grid grid-cols-5 gap-1.5">
+          {sizeKeys.map((k) => (
+            <button key={k} onClick={() => setSize(k)}
+              className={`flex flex-col items-center rounded-xl border py-2 transition-all ${size === k ? "border-gold bg-gold/18 shadow-[0_0_10px_rgba(201,154,58,0.2)]" : "border-gold/20 hover:border-gold/40"}`}
+            >
+              <span className={`text-[10px] font-bold ${size === k ? "text-gold" : "text-cream/50"}`}>{sizeNames[k]}</span>
+              <span className={`text-xs font-semibold ${size === k ? "text-gold" : "text-cream/65"}`}>${basePrices[k].toFixed(2)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sauce */}
+      <div>
+        <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">Sauce <span className="font-normal text-cream/40">(counts as 1 topping)</span></p>
+        <div className="flex flex-wrap gap-1.5">
+          {BYO_TOPPINGS.sauces.map((s) => (
+            <button key={s} onClick={() => setSauce(s)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${sauce === s ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+            >{s}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Toppings */}
+      <div>
+        <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">
+          Toppings — <span className="text-gold">{toppings.length} selected</span>
+          <span className="text-cream/40 font-normal ml-2">(first 4 = $1 each)</span>
+        </p>
+        <div className="space-y-3">
+          {[
+            { label: "Vegetarian", items: BYO_TOPPINGS.vegetarian },
+            { label: "Non-Vegetarian", items: BYO_TOPPINGS.nonVegetarian },
+            { label: "Extra Cheese", items: BYO_TOPPINGS.additionalCheeses },
+          ].map(({ label, items }) => (
+            <div key={label}>
+              <p className="text-[11px] text-cream/40 uppercase tracking-wide mb-1.5">{label}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {items.map((t) => (
+                  <button key={t} onClick={() => toggleTopping(t)}
+                    className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${toppings.includes(t) ? "border-gold bg-gold/18 text-gold font-semibold" : "border-gold/20 text-cream/60 hover:border-gold/40"}`}
+                  >{t}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Total + Add */}
+      <div className="flex items-center justify-between border-t border-gold/15 pt-4">
+        <div>
+          <p className="text-xs text-cream/50">Estimated Total</p>
+          <p className="text-2xl font-bold text-gold">{formatCurrency(total)}</p>
+          {toppings.length > 0 && (
+            <p className="text-[11px] text-cream/40">Base {formatCurrency(basePrice)} + {toppings.length} topping{toppings.length !== 1 ? "s" : ""} {formatCurrency(toppingCost)}</p>
+          )}
+        </div>
+        <div className="relative">
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={handleAdd}
+            className="rounded-xl border border-gold/40 bg-gold/15 px-6 py-3 text-sm font-bold text-gold hover:bg-gold/25 hover:border-gold/65 transition-all"
+          >Add to Cart</motion.button>
+          <AnimatePresence>
+            {added && (
+              <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center rounded-xl bg-green-900/80 text-xs font-bold text-green-300 pointer-events-none"
+              >✓ Added!</motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export function MenuPageClient() {
   const searchParams = useSearchParams();
-  const [active, setActive] = useState<MenuCategoryId>("pizzas");
+  const [active, setActive] = useState<MenuCategoryId>("starters");
   const [q, setQ] = useState("");
 
   useEffect(() => {
@@ -144,288 +264,177 @@ export function MenuPageClient() {
   }, [searchParams]);
 
   const filteredPizzas = useMemo(
-    () =>
-      SPECIALTY_PIZZAS.filter((p) =>
-        matches(q, p.name, p.toppings, p.sauce, p.drizzle, p.choiceOfDrizzle),
-      ),
-    [q],
+    () => SPECIALTY_PIZZAS.filter((p) => matches(q, p.name, p.toppings, p.sauce)),
+    [q]
   );
-
-  const byoHaystack = useMemo(() => {
-    const toppings = [
-      ...BYO_TOPPINGS.sauces,
-      ...BYO_TOPPINGS.additionalCheeses,
-      ...BYO_TOPPINGS.vegetarian,
-      ...BYO_TOPPINGS.nonVegetarian,
-    ].join(" ");
-    const extras = BYO_EXTRAS.map((e) => e.name).join(" ");
-    const tiers = BUILD_YOUR_OWN_TIERS.map((t) => t.label).join(" ");
-    return `${tiers} ${toppings} ${extras} ${PIZZA_SIZE_LEGEND}`;
-  }, []);
-
-  const showByo = matches(q, "build", "topping", "cheese", "sauce", byoHaystack);
-
-  function filterSimple(list: typeof SUBS) {
+  const filteredSig = useMemo(
+    () => SIGNATURE_PIZZAS.filter((p) => matches(q, p.name, p.toppings)),
+    [q]
+  );
+  function fs<T extends { name?: string; description?: string }>(list: T[]) {
     return list.filter((i) => matches(q, i.name, i.description));
   }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: panelTransition.ease }}
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease }}
         className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
       >
         <div>
           <h1 className="font-display text-3xl text-gold md:text-4xl">Build Your Order, Your Way</h1>
-          <p className="mt-2 max-w-xl text-sm text-cream/75">
-            Explore the full menu with ease: filter by category, search exactly what you’re craving, and plan your order before you even arrive. Everything is designed to help you choose faster, smarter, and exactly how you like it.
+          <p className="mt-1.5 max-w-xl text-sm text-cream/65">
+            Browse every category, search what you're craving, and add directly to your cart.
           </p>
         </div>
         <label className="block w-full md:max-w-xs">
           <span className="sr-only">Search menu</span>
           <motion.input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            type="search" value={q} onChange={(e) => setQ(e.target.value)}
             placeholder="Search items…"
-            whileFocus={{ scale: 1.02, boxShadow: "0 0 0 2px rgba(201,154,58,0.35)" }}
-            className="w-full rounded-md border border-gold/35 bg-charcoal px-4 py-2.5 text-sm text-cream placeholder:text-cream/40 outline-none ring-gold/30 transition-shadow"
+            whileFocus={{ boxShadow: "0 0 0 2px rgba(201,154,58,0.35)" }}
+            className="w-full rounded-xl border border-gold/30 bg-charcoal px-4 py-2.5 text-sm text-cream placeholder:text-cream/35 outline-none transition-shadow"
           />
         </label>
       </motion.div>
 
-      <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true, margin: "-40px" }}
-  transition={{ duration: 0.55 }}
-  className="mb-10 rounded-xl border border-gold/25 bg-gradient-to-br from-charcoal/95 via-charcoal/85 to-umber/30 p-6 shadow-[0_0_60px_rgba(201,154,58,0.08)] md:p-8"
->
-  <h2 className="font-display text-xl text-gold md:text-2xl">
-    {MENU_INTRO.title}
-  </h2>
-
-  <div className="mt-4 max-w-4xl space-y-3 text-sm leading-relaxed text-cream/80 md:text-base">
-    {MENU_INTRO.paras.map((p, i) => (
-      <p key={i}>{p}</p>
-    ))}
-  </div>
-
-  {/* YE NAYA SECTION YAHAN LAGAO */}
-  <h3 className="mt-8 font-display text-lg text-gold">
-    {MENU_INTRO.appetiteTitle}
-  </h3>
-
-  <div className="mt-3 max-w-4xl space-y-3 text-sm leading-relaxed text-cream/80 md:text-base">
-    {MENU_INTRO.appetiteBody.map((p, i) => (
-      <p key={i}>{p}</p>
-    ))}
-  </div>
-
-  {/* TIPS */}
-  <h3 className="mt-8 font-display text-lg text-gold">
-    {MENU_INTRO.tipsTitle}
-  </h3>
-
-  <ul className="mt-3 max-w-3xl space-y-2 text-sm text-cream/75">
-    {MENU_INTRO.tips.map((t) => (
-      <li key={t} className="flex items-start gap-2">
-        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
-        {t}
-      </li>
-    ))}
-  </ul>
-</motion.div>
-
       <CategoryTabs active={active} onChange={setActive} />
 
       <AnimatePresence mode="wait">
-        {active === "pizzas" ? (
-          <motion.section
-            key="pizzas"
-            role="tabpanel"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={panelTransition}
-            aria-labelledby="menu-pizzas"
-            className="mt-10 space-y-6"
-          >
-            <CategoryHero categoryId="pizzas" />
-            <h2 id="menu-pizzas" className="font-display text-2xl text-cream">Specialty pizzas</h2>
-            <p className="text-sm text-cream/65">{PIZZA_SIZE_LEGEND}</p>
-            <div className="grid gap-5 md:grid-cols-2">
-              {filteredPizzas.map((p) => (
-                <SpecialtyPizzaCard key={p.id} pizza={p} />
-              ))}
+
+        {/* ── STARTERS ─────────────────────────────────────────────────────── */}
+        {active === "starters" && (
+          <motion.section key="starters" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-2">
+            <CategoryHero id="starters" />
+            <SectionTitle>Starters</SectionTitle>
+            <div className="space-y-2">{fs(STARTERS).map((i) => <StarterCard key={i.id} item={i} />)}</div>
+            <SubTitle>Sides</SubTitle>
+            <div className="space-y-2">{fs(SIDES).map((i) => <SimpleItemCard key={i.id} item={i} category="side" />)}</div>
+          </motion.section>
+        )}
+
+        {/* ── CLASSIC PIZZAS ────────────────────────────────────────────────── */}
+        {active === "pizzas" && (
+          <motion.section key="pizzas" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-4">
+            <CategoryHero id="pizzas" />
+            <SectionTitle>Classic Pizzas</SectionTitle>
+            <p className="text-xs text-cream/45 -mt-2">{PIZZA_SIZE_LEGEND}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {filteredPizzas.map((p) => <SpecialtyPizzaCard key={p.id} pizza={p} />)}
             </div>
-            {filteredPizzas.length === 0 ? (
-              <p className="text-cream/60">No pizzas match your search.</p>
-            ) : null}
+            {!filteredPizzas.length && <p className="text-cream/50">No pizzas match your search.</p>}
           </motion.section>
-        ) : null}
+        )}
 
-        {active === "build-your-own" && showByo ? (
-          <motion.section
-            key="byo"
-            role="tabpanel"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={panelTransition}
-            aria-labelledby="menu-byo"
-            className="mt-10 space-y-6"
-          >
-            <CategoryHero categoryId="build-your-own" />
-            <h2 id="menu-byo" className="font-display text-2xl text-cream">Build your own pizza</h2>
-            <p className="text-sm text-cream/65">{PIZZA_SIZE_LEGEND}</p>
-            <div className="overflow-x-auto rounded-lg border border-gold/25 bg-charcoal/70">
-              <table className="min-w-full text-left text-sm text-cream">
-                <thead className="border-b border-gold/25 bg-umber/40 text-gold">
-                  <tr>
-                    <th className="px-4 py-3 font-display">Tier</th>
-                    <th className="px-2 py-3">S</th><th className="px-2 py-3">M</th>
-                    <th className="px-2 py-3">L</th><th className="px-2 py-3">XL</th>
-                    <th className="px-2 py-3">P</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {BUILD_YOUR_OWN_TIERS.map((row) => (
-                    <tr key={row.label} className="border-b border-gold/10">
-                      <td className="px-4 py-3 font-medium">{row.label}</td>
-                      <td className="px-2 py-3">${row.prices.S.toFixed(2)}</td>
-                      <td className="px-2 py-3">${row.prices.M.toFixed(2)}</td>
-                      <td className="px-2 py-3">${row.prices.L.toFixed(2)}</td>
-                      <td className="px-2 py-3">${row.prices.XL.toFixed(2)}</td>
-                      <td className="px-2 py-3">${row.prices.P.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* ── SIGNATURE PIZZAS ──────────────────────────────────────────────── */}
+        {active === "signature-pizzas" && (
+          <motion.section key="sig-pizzas" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-4">
+            <CategoryHero id="signature-pizzas" />
+            <SectionTitle>Signature Pizzas</SectionTitle>
+            <p className="text-xs text-cream/45 -mt-2">Available in Small & Medium only</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {filteredSig.map((p) => <SignaturePizzaCard key={p.id} pizza={p} />)}
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              {[
-                { title: "Sauces", items: BYO_TOPPINGS.sauces },
-                { title: "Additional cheeses", items: BYO_TOPPINGS.additionalCheeses },
-                { title: "Vegetarian toppings", items: BYO_TOPPINGS.vegetarian },
-                { title: "Non-vegetarian toppings", items: BYO_TOPPINGS.nonVegetarian },
-              ].map(({ title, items }) => (
-                <div key={title} className="rounded-lg border border-gold/25 bg-charcoal/70 p-5">
-                  <h3 className="font-display text-lg text-gold">{title}</h3>
-                  <p className="mt-2 text-sm text-cream/85">{items.join(", ")}.</p>
-                </div>
-              ))}
-            </div>
-            <h3 className="font-display text-xl text-gold">Extras</h3>
-            <div className="space-y-3">
-              {BYO_EXTRAS.map((ex) => (
-                <div key={ex.name} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-gold/20 bg-charcoal/60 px-4 py-3 text-sm">
-                  <span className="text-cream">{ex.name}</span>
-                  <span className="text-gold">
-                    S ${ex.prices.S.toFixed(2)} · M ${ex.prices.M.toFixed(2)} · L ${ex.prices.L.toFixed(2)} · XL ${ex.prices.XL.toFixed(2)} · P ${ex.prices.P.toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {!filteredSig.length && <p className="text-cream/50">No signature pizzas match your search.</p>}
           </motion.section>
-        ) : null}
+        )}
 
-        {active === "build-your-own" && !showByo ? (
-          <motion.p key="byo-empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-10 text-cream/60">
-            No build-your-own items match your search.
-          </motion.p>
-        ) : null}
-
-        {active === "subs" ? (
-          <motion.section key="subs" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-subs" className="mt-10 space-y-6">
-            <CategoryHero categoryId="subs" />
-            <h2 id="menu-subs" className="font-display text-2xl text-cream">Subs</h2>
-            <div className="space-y-3">{filterSimple(SUBS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-            <h3 className="font-display text-xl text-gold">Sub extras</h3>
-            <div className="space-y-3">{filterSimple(SUB_EXTRAS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
+        {/* ── BUILD YOUR OWN PIZZA ──────────────────────────────────────────── */}
+        {active === "build-your-own" && (
+          <motion.section key="byo" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-4">
+            <CategoryHero id="build-your-own" />
+            <SectionTitle>Build Your Own Pizza</SectionTitle>
+            <ByoPizzaBuilder />
           </motion.section>
-        ) : null}
+        )}
 
-        {active === "pastas" ? (
-          <motion.section key="pastas" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-pastas" className="mt-10 space-y-6">
-            <CategoryHero categoryId="pastas" />
-            <h2 id="menu-pastas" className="font-display text-2xl text-cream">Pastas</h2>
-            <div className="space-y-3">{filterSimple(PASTAS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-            <h3 className="font-display text-xl text-gold">Pasta extras</h3>
-            <div className="space-y-3">{filterSimple(PASTA_EXTRAS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
+        {/* ── SUBS & SANDWICHES ─────────────────────────────────────────────── */}
+        {active === "subs" && (
+          <motion.section key="subs" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-2">
+            <CategoryHero id="subs" />
+            <SectionTitle>Sandwiches</SectionTitle>
+            <p className="text-xs text-cream/45 -mt-2">Comes with a choice of Side — Fries, Onion Rings or Wedges</p>
+            <div className="space-y-2">{fs(SANDWICHES).map((i) => <SimpleItemCard key={i.id} item={i} category="sandwich" />)}</div>
+            <SubTitle>Submarines (Foot Long)</SubTitle>
+            <div className="space-y-2">{fs(SUBS).map((i) => <SimpleItemCard key={i.id} item={i} category="sub" />)}</div>
+            <SubTitle>Sub Extras</SubTitle>
+            <div className="space-y-2">{fs(SUB_EXTRAS).map((i) => <SimpleItemCard key={i.id} item={i} category="sub-extra" />)}</div>
           </motion.section>
-        ) : null}
+        )}
 
-        {active === "garlic-breads" ? (
-          <motion.section key="garlic" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-garlic" className="mt-10 space-y-6">
-            <CategoryHero categoryId="garlic-breads" />
-            <h2 id="menu-garlic" className="font-display text-2xl text-cream">Garlic breads</h2>
-            <div className="space-y-3">{filterSimple(GARLIC_BREADS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-          </motion.section>
-        ) : null}
-
-        {active === "wings" ? (
-          <motion.section key="wings" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-wings" className="mt-10 space-y-6">
-            <CategoryHero categoryId="wings" />
-            <h2 id="menu-wings" className="font-display text-2xl text-cream">Wings</h2>
-            <div className="rounded-lg border border-gold/20 bg-charcoal/60 px-5 py-4 text-sm">
-              <span className="font-semibold text-gold">Available sauces: </span>
-              <span className="text-cream/80">{WING_SAUCES}</span>
-            </div>
-            <div className="space-y-3">{filterSimple(WINGS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-          </motion.section>
-        ) : null}
-
-        {active === "salads" ? (
-          <motion.section key="salads" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-salads" className="mt-10 space-y-6">
-            <CategoryHero categoryId="salads" />
-            <h2 id="menu-salads" className="font-display text-2xl text-cream">Salads</h2>
-            <div className="space-y-3">{filterSimple(SALADS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-          </motion.section>
-        ) : null}
-
-        {active === "sides" ? (
-          <motion.section key="sides" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-sides" className="mt-10 space-y-6">
-            <CategoryHero categoryId="sides" />
-            <h2 id="menu-sides" className="font-display text-2xl text-cream">Sides</h2>
-            <div className="space-y-3">{filterSimple(SIDES).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-            <div className="rounded-lg border border-gold/25 bg-charcoal/70 p-5 text-sm text-cream/85">
-              <h3 className="font-display text-lg text-gold">Dips</h3>
-              <p className="mt-2">{DIPS_LIST}</p>
-            </div>
-            <div className="rounded-lg border border-gold/25 bg-charcoal/70 p-5 text-sm text-cream/85">
-              <h3 className="font-display text-lg text-gold">Beverages</h3>
-              <p className="mt-2">{BEVERAGES_LIST}</p>
-            </div>
-          </motion.section>
-        ) : null}
-
-        {active === "desserts" ? (
-          <motion.section key="desserts" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-desserts" className="mt-10 space-y-6">
-            <CategoryHero categoryId="desserts" />
-            <h2 id="menu-desserts" className="font-display text-2xl text-cream">Desserts</h2>
-            <div className="space-y-3">{filterSimple(DESSERTS).map((i) => <SimpleItemCard key={i.id} item={i} />)}</div>
-          </motion.section>
-        ) : null}
-
-        {active === "drinks-dips" ? (
-          <motion.section key="drinks" role="tabpanel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={panelTransition} aria-labelledby="menu-drinks" className="mt-10 space-y-6">
-            <CategoryHero categoryId="drinks-dips" />
-            <h2 id="menu-drinks" className="font-display text-2xl text-cream">Drinks & dips</h2>
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="rounded-lg border border-gold/25 bg-charcoal/70 p-6 text-sm text-cream/85">
-                <h3 className="font-display text-lg text-gold">Dips</h3>
-                <p className="mt-2">{DIPS_LIST}</p>
-              </div>
-              <div className="rounded-lg border border-gold/25 bg-charcoal/70 p-6 text-sm text-cream/85">
-                <h3 className="font-display text-lg text-gold">Beverages</h3>
-                <p className="mt-2">{BEVERAGES_LIST}</p>
+        {/* ── PASTAS ────────────────────────────────────────────────────────── */}
+        {active === "pastas" && (
+          <motion.section key="pastas" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-2">
+            <CategoryHero id="pastas" />
+            <SectionTitle>Pastas</SectionTitle>
+            <div className="space-y-2">{fs(PASTAS).map((i) => <SimpleItemCard key={i.id} item={i} category="pasta" />)}</div>
+            <SubTitle>Signature Pastas</SubTitle>
+            <div className="space-y-2">{fs(SIGNATURE_PASTAS).map((i) => <SimpleItemCard key={i.id} item={i} category="signature-pasta" />)}</div>
+            <SubTitle>Pasta Add-Ons</SubTitle>
+            <div className="space-y-2">{fs(PASTA_ADDONS).map((i) => <SimpleItemCard key={i.id} item={i} category="pasta-addon" />)}</div>
+            {/* Build Your Own Pasta */}
+            <SubTitle>Build Your Own Pasta</SubTitle>
+            <div className="rounded-2xl border border-gold/20 bg-charcoal/60 p-5 space-y-4">
+              <span className="text-gold font-bold">Starting at {formatCurrency(BUILD_YOUR_OWN_PASTA.startingAt)}</span>
+              <div className="grid gap-3 md:grid-cols-2 mt-3">
+                {[
+                  { label: "🍝 Choose Your Pasta", items: BUILD_YOUR_OWN_PASTA.pastas },
+                  { label: "🍅 Choose Your Sauce", items: BUILD_YOUR_OWN_PASTA.sauces },
+                  { label: "🥩 Add Protein", items: BUILD_YOUR_OWN_PASTA.proteins },
+                  { label: "🧀 Way to Cook", items: BUILD_YOUR_OWN_PASTA.wayToCook },
+                ].map(({ label, items }) => (
+                  <div key={label} className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+                    <p className="text-sm font-bold text-gold mb-2">{label}</p>
+                    <ul className="space-y-1">
+                      {items.map((item) => (
+                        <li key={item} className="text-xs text-cream/70 flex items-start gap-1.5">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold/50" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.section>
-        ) : null}
+        )}
+
+        {/* ── WINGS ─────────────────────────────────────────────────────────── */}
+        {active === "wings" && (
+          <motion.section key="wings" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-3">
+            <CategoryHero id="wings" />
+            <SectionTitle>Wings</SectionTitle>
+            <div className="space-y-2">{fs(WINGS).map((i) => <WingsCard key={i.id} item={i} />)}</div>
+            <SubTitle>Available Sauces</SubTitle>
+            <div className="rounded-xl border border-gold/20 bg-charcoal/60 px-5 py-4">
+              <div className="flex flex-wrap gap-2">
+                {WING_SAUCES.split(", ").map((s) => (
+                  <span key={s} className="rounded-full border border-gold/25 bg-gold/8 px-3 py-1 text-xs text-gold/80">{s}</span>
+                ))}
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── SALADS ────────────────────────────────────────────────────────── */}
+        {active === "salads" && (
+          <motion.section key="salads" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-2">
+            <CategoryHero id="salads" />
+            <SectionTitle>Salads</SectionTitle>
+            <div className="space-y-2">{fs(SALADS).map((i) => <SimpleItemCard key={i.id} item={i} category="salad" />)}</div>
+          </motion.section>
+        )}
+
+        {/* ── SIDES ─────────────────────────────────────────────────────────── */}
+        {active === "sides" && (
+          <motion.section key="sides" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-2">
+            <CategoryHero id="sides" />
+            <SectionTitle>Sides</SectionTitle>
+            <div className="space-y-2">{fs(SIDES).map((i) => <SimpleItemCard key={i.id} item={i} category="side" />)}</div>
+          </motion.section>
+        )}
+
       </AnimatePresence>
     </div>
   );
