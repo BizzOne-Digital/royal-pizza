@@ -44,9 +44,17 @@ export function Footer() {
             Visit the Royal
           </motion.p>
           <p className="mt-2 text-sm text-cream/90">{SITE.address.full}</p>
-          <p className="mt-2 text-sm text-cream/80">
-            <span className="text-gold/90">Hours:</span> {SITE.hours}
-          </p>
+          <div className="mt-2 text-sm text-cream/80">
+            <span className="text-gold/90">Hours:</span>
+            <ul className="mt-1 space-y-0.5">
+              {SITE.hoursDetailed.map((h) => (
+                <li key={h.day} className="flex gap-2">
+                  <span className="w-24 shrink-0 text-cream/50">{h.day}</span>
+                  <span>{h.open} – {h.close}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Reveal>
 
         <Reveal delay={0.08}>

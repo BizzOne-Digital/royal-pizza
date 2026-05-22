@@ -19,7 +19,16 @@ export const SITE = {
     full: "134 Guelph Street, Georgetown, Ontario L7G 4A5, Canada",
     mapsQuery: "134 Guelph Street, Georgetown, Ontario L7G 4A5",
   },
-  hours: "11:00 a.m. – 11:00 p.m.",
+  hours: "Mon–Tue 3PM–10PM · Wed–Thu 12PM–11PM · Fri–Sat 12PM–1AM · Sun 12PM–11PM",
+  hoursDetailed: [
+    { day: "Monday",    open: "3:00 PM",  close: "10:00 PM" },
+    { day: "Tuesday",   open: "3:00 PM",  close: "10:00 PM" },
+    { day: "Wednesday", open: "12:00 PM", close: "11:00 PM" },
+    { day: "Thursday",  open: "12:00 PM", close: "11:00 PM" },
+    { day: "Friday",    open: "12:00 PM", close: "1:00 AM"  },
+    { day: "Saturday",  open: "12:00 PM", close: "1:00 AM"  },
+    { day: "Sunday",    open: "12:00 PM", close: "11:00 PM" },
+  ],
   established: 1973,
 } as const;
 

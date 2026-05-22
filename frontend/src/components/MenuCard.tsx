@@ -14,6 +14,8 @@ const sizeLabels: { key: keyof PizzaPrices; short: string; full: string }[] = [
   { key: "P", short: "P", full: "Party" },
 ];
 
+const SIDES_OPTIONS = ["Fries", "Onion Rings", "Wedges"];
+
 function AddedBadge({ show }: { show: boolean }) {
   return (
     <AnimatePresence>
@@ -35,18 +37,21 @@ function AddedBadge({ show }: { show: boolean }) {
 export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<keyof PizzaPrices>("M");
+  const [notes, setNotes] = useState("");
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
     const sizeInfo = sizeLabels.find((s) => s.key === selectedSize)!;
     addItem({
-      id: `${pizza.id}-${selectedSize}`,
+      id: `${pizza.id}-${selectedSize}-${Date.now()}`,
       name: pizza.name,
       category: "pizza",
       price: pizza.prices[selectedSize],
       size: sizeInfo.full,
+      notes: notes.trim() || undefined,
     });
     setAdded(true);
+    setNotes("");
     setTimeout(() => setAdded(false), 1800);
   };
 
@@ -65,16 +70,11 @@ export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
         <span className="shrink-0 text-xs text-cream/45">from {formatCurrency(pizza.startingAt)}</span>
       </div>
 
-      {/* Info chips */}
+      {/* Sauce chip */}
       <div className="flex flex-wrap gap-1.5 mb-3">
         <span className="rounded-full border border-gold/30 bg-gold/8 px-2.5 py-0.5 text-[11px] text-gold/80">
           🍅 {pizza.sauce}
         </span>
-        {pizza.drizzle && (
-          <span className="rounded-full border border-red-500/30 bg-red-900/20 px-2.5 py-0.5 text-[11px] text-red-300/80">
-            🌶 {pizza.drizzle} drizzle
-          </span>
-        )}
       </div>
       <p className="text-sm text-cream/70 leading-relaxed mb-4 flex-1">{pizza.toppings}</p>
 
@@ -97,6 +97,15 @@ export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
           </button>
         ))}
       </div>
+
+      {/* Notes field */}
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Special requests / replace toppings… (optional)"
+        rows={2}
+        className="mb-3 w-full rounded-lg border border-gold/20 bg-charcoal/50 px-3 py-2 text-xs text-cream/80 placeholder:text-cream/30 outline-none focus:border-gold/45 resize-none transition-colors"
+      />
 
       {/* Add to cart */}
       <div className="relative">
@@ -124,7 +133,7 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
 
   const handleAdd = () => {
     addItem({
-      id: `${pizza.id}-${selected.label}`,
+      id: `${pizza.id}-${selected.label}-${Date.now()}`,
       name: pizza.name,
       category: "signature-pizza",
       price: selected.amount,
@@ -141,19 +150,15 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
       transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col rounded-2xl border border-amber-700/30 bg-gradient-to-b from-amber-950/30 to-charcoal/90 p-5 shadow-lg transition-all duration-300 hover:border-amber-600/50 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]"
+      className="flex flex-col rounded-2xl border border-amber-700/30 bg-gradient-to-b from-amber-950/30 to-charcoal/90 p-5 shadow-lg transition-all duration-300 hover:border-amber-600/50"
     >
-      {/* Crown badge */}
       <div className="flex items-baseline justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
           <span className="text-base">👑</span>
           <h3 className="font-display text-lg text-amber-300 leading-tight">{pizza.name}</h3>
         </div>
       </div>
-
       <p className="text-sm text-cream/70 leading-relaxed mb-4 flex-1">{pizza.toppings}</p>
-
-      {/* Size picker */}
       <div className="flex gap-2 mb-3">
         {pizza.prices.map((p, i) => (
           <button
@@ -170,7 +175,6 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
           </button>
         ))}
       </div>
-
       <div className="relative">
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -179,6 +183,80 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
           className="w-full rounded-lg bg-amber-900/30 border border-amber-600/40 py-2.5 text-sm font-bold text-amber-300 transition-all hover:bg-amber-900/50 hover:border-amber-500/60"
         >
           Add to Cart — {formatCurrency(selected.amount)}
+        </motion.button>
+        <AddedBadge show={added} />
+      </div>
+    </motion.article>
+  );
+}
+
+/* ─── SANDWICH CARD (with side selector) ────────────────────────────────────── */
+export function SandwichCard({ item }: { item: SimpleMenuItem }) {
+  const { addItem } = useCart();
+  const [side, setSide] = useState(SIDES_OPTIONS[0]);
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    if (!item.price) return;
+    addItem({
+      id: `${item.id}-${side}-${Date.now()}`,
+      name: item.name,
+      category: "sandwich",
+      price: item.price,
+      notes: `Side: ${side}`,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, x: -8 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-12px" }}
+      transition={{ duration: 0.38 }}
+      className="rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-4 transition-all hover:border-gold/40 hover:bg-charcoal/80"
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex-1">
+          <h3 className="font-display text-base text-cream">{item.name}</h3>
+          {item.description && (
+            <p className="mt-0.5 text-xs text-cream/55 leading-relaxed">{item.description}</p>
+          )}
+        </div>
+        {item.price && (
+          <span className="text-base font-bold text-gold shrink-0">{formatCurrency(item.price)}</span>
+        )}
+      </div>
+
+      {/* Side selector */}
+      <div className="mb-3">
+        <p className="text-[11px] font-bold text-gold/60 uppercase tracking-wide mb-1.5">Choose Your Side</p>
+        <div className="flex gap-1.5">
+          {SIDES_OPTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => setSide(s)}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                side === s
+                  ? "border-gold bg-gold/18 text-gold shadow-[0_0_8px_rgba(201,154,58,0.15)]"
+                  : "border-gold/20 text-cream/60 hover:border-gold/40"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={handleAdd}
+          className="w-full rounded-lg border border-gold/35 bg-gold/10 py-2 text-xs font-bold text-gold transition-all hover:bg-gold/22 hover:border-gold/60"
+        >
+          Add to Cart — {formatCurrency(item.price ?? 0)} · Side: {side}
         </motion.button>
         <AddedBadge show={added} />
       </div>
@@ -199,7 +277,7 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
   const handleAdd = () => {
     if (!price) return;
     addItem({
-      id: `${item.id}-${selectedPrice?.label ?? "std"}`,
+      id: `${item.id}-${selectedPrice?.label ?? "std"}-${Date.now()}`,
       name: item.name,
       category: category ?? "item",
       price,
@@ -218,7 +296,6 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
       transition={{ duration: 0.38 }}
       className="group flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-3.5 transition-all duration-200 hover:border-gold/40 hover:bg-charcoal/80"
     >
-      {/* Name + desc */}
       <div className="flex-1 min-w-0">
         <h3 className="font-display text-base text-cream leading-snug">{item.name}</h3>
         {item.description && (
@@ -228,8 +305,6 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
           <p className="mt-1 text-[11px] text-gold/60 italic">{item.note}</p>
         )}
       </div>
-
-      {/* Price + sizes + button */}
       <div className="flex flex-col items-end gap-2 shrink-0">
         {typeof item.price === "number" && (
           <span className="text-base font-bold text-gold">{formatCurrency(item.price)}</span>
@@ -242,8 +317,8 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
                 onClick={() => setSelectedPrice(p)}
                 className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
                   selectedPrice?.label === p.label
-                    ? "border-gold bg-gold/18 text-gold shadow-[0_0_8px_rgba(201,154,58,0.15)]"
-                    : "border-gold/25 text-gold/60 hover:border-gold/50 hover:text-gold/80"
+                    ? "border-gold bg-gold/18 text-gold"
+                    : "border-gold/25 text-gold/60 hover:border-gold/50"
                 }`}
               >
                 {p.label} {formatCurrency(p.amount)}
@@ -252,7 +327,7 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
           </div>
         )}
         {price > 0 ? (
-          <div className="relative w-full sm:w-auto">
+          <div className="relative">
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
@@ -278,12 +353,7 @@ export function WingsCard({ item }: { item: SimpleMenuItem }) {
 
   const handleAdd = () => {
     if (!item.price) return;
-    addItem({
-      id: item.id,
-      name: item.name,
-      category: "wings",
-      price: item.price,
-    });
+    addItem({ id: `${item.id}-${Date.now()}`, name: item.name, category: "wings", price: item.price });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -304,10 +374,9 @@ export function WingsCard({ item }: { item: SimpleMenuItem }) {
         <span className="text-lg font-bold text-orange-300">{formatCurrency(item.price ?? 0)}</span>
         <div className="relative">
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={handleAdd}
-            className="rounded-lg border border-orange-500/40 bg-orange-900/25 px-3 py-1.5 text-xs font-bold text-orange-300 transition-all hover:bg-orange-900/45 hover:border-orange-400/60"
+            className="rounded-lg border border-orange-500/40 bg-orange-900/25 px-3 py-1.5 text-xs font-bold text-orange-300 transition-all hover:bg-orange-900/45"
           >
             + Add
           </motion.button>
@@ -326,7 +395,7 @@ export function StarterCard({ item }: { item: SimpleMenuItem }) {
 
   const handleAdd = () => {
     if (!hasPrice) return;
-    addItem({ id: item.id, name: item.name, category: "starter", price: item.price! });
+    addItem({ id: `${item.id}-${Date.now()}`, name: item.name, category: "starter", price: item.price! });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };

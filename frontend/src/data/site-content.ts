@@ -228,7 +228,7 @@ faqs: [
 
   {
     q: "What are your hours?",
-    a: "Open daily from 11:00 a.m. to 11:00 p.m. — ideal for lunch, dinner, and late-night cravings after the game.",
+    a: "Mon–Tue: 3PM–10PM · Wed–Thu: 12PM–11PM · Fri–Sat: 12PM–1AM · Sun: 12PM–11PM",
   },
 
   {

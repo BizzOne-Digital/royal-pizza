@@ -35,9 +35,17 @@ export function ContactSection({ showForm = true }: { showForm?: boolean }) {
             <br />
             {SITE.address.country}
           </address>
-          <p className="mt-4 text-sm text-cream/75">
-            <span className="font-semibold text-gold">Hours:</span> {SITE.hours}
-          </p>
+          <div className="mt-4 text-sm text-cream/75">
+            <span className="font-semibold text-gold">Hours:</span>
+            <ul className="mt-1.5 space-y-0.5">
+              {SITE.hoursDetailed.map((h) => (
+                <li key={h.day} className="flex gap-2">
+                  <span className="w-24 shrink-0 text-cream/50">{h.day}</span>
+                  <span>{h.open} – {h.close}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
           <div className="mt-4 flex flex-wrap gap-3">
             <motion.a
               href={SITE.phones[0].href}

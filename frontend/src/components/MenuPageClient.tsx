@@ -32,6 +32,7 @@ import {
   SimpleItemCard,
   SpecialtyPizzaCard,
   SignaturePizzaCard,
+  SandwichCard,
   WingsCard,
   StarterCard,
 } from "./MenuCard";
@@ -152,8 +153,10 @@ function ByoPizzaBuilder() {
   const basePrices: Record<string, number> = { S: 12.93, M: 16.93, L: 20.93, XL: 24.93, P: 28.93 };
   const extraPriceMap: Record<string, number> = { S: 1, M: 1.5, L: 2, XL: 2.5, P: 3 };
   const basePrice = basePrices[size];
-  const firstFour = Math.min(toppings.length, 4);
-  const extra = Math.max(0, toppings.length - 4);
+  const sauceCost = sauce !== "Pizza Sauce" ? 1 : 0; // non-default sauce = 1 topping cost
+  const allToppings = toppings.length + sauceCost;
+  const firstFour = Math.min(allToppings, 4);
+  const extra = Math.max(0, allToppings - 4);
   const toppingCost = firstFour * 1 + extra * (extraPriceMap[size] ?? 1);
   const total = basePrice + toppingCost;
 
@@ -230,7 +233,7 @@ function ByoPizzaBuilder() {
           <p className="text-xs text-cream/50">Estimated Total</p>
           <p className="text-2xl font-bold text-gold">{formatCurrency(total)}</p>
           {toppings.length > 0 && (
-            <p className="text-[11px] text-cream/40">Base {formatCurrency(basePrice)} + {toppings.length} topping{toppings.length !== 1 ? "s" : ""} {formatCurrency(toppingCost)}</p>
+            <p className="text-[11px] text-cream/40">Base {formatCurrency(basePrice)} + {allToppings} topping{allToppings !== 1 ? "s" : ""} {formatCurrency(toppingCost)}</p>
           )}
         </div>
         <div className="relative">
@@ -354,7 +357,7 @@ export function MenuPageClient() {
             <CategoryHero id="subs" />
             <SectionTitle>Sandwiches</SectionTitle>
             <p className="text-xs text-cream/45 -mt-2">Comes with a choice of Side — Fries, Onion Rings or Wedges</p>
-            <div className="space-y-2">{fs(SANDWICHES).map((i) => <SimpleItemCard key={i.id} item={i} category="sandwich" />)}</div>
+            <div className="space-y-2">{fs(SANDWICHES).map((i) => <SandwichCard key={i.id} item={i} />)}</div>
             <SubTitle>Submarines (Foot Long)</SubTitle>
             <div className="space-y-2">{fs(SUBS).map((i) => <SimpleItemCard key={i.id} item={i} category="sub" />)}</div>
             <SubTitle>Sub Extras</SubTitle>
