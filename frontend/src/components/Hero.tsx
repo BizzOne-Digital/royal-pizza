@@ -136,7 +136,7 @@ export function Hero({
             transition={{ duration: 0.5, ease }}
             className="text-xs font-semibold uppercase tracking-[0.28em] text-gold/90"
           >
-            Serving authentic Italian cuisine in Georgetown | since {SITE.established}
+            Homemade taste, Georgetown proud  | since {SITE.established}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 28 }}
@@ -152,9 +152,8 @@ export function Hero({
             transition={{ duration: 0.6, delay: 0.16, ease }}
             className="mt-5 max-w-xl text-base text-cream/85 md:text-lg leading-relaxed"
           >
-            Fresh out of the oven and made to satisfy, Royal Pizzeria and Bar serves
-            authentic Italian pizzas, subs, wings, and pastas that keep Georgetown
-            coming back.
+            Real food, made to order. Pizzas, subs, wings, pastas 
+             the kind of meal Georgetown keeps coming back for.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
