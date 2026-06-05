@@ -123,21 +123,20 @@ export function SpecialtyPizzaCard({ pizza }: { pizza: SpecialtyPizza }) {
   );
 }
 
-/* ─── SIGNATURE PIZZA CARD ─────────────────────────────────────────────────── */
+/* ─── SIGNATURE PIZZA CARD (all 5 sizes with PizzaPrices) ───────────────── */
 export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
   const { addItem } = useCart();
-  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<keyof PizzaPrices>("M");
   const [added, setAdded] = useState(false);
 
-  const selected = pizza.prices[selectedIdx];
-
   const handleAdd = () => {
+    const sizeInfo = sizeLabels.find((s) => s.key === selectedSize)!;
     addItem({
-      id: `${pizza.id}-${selected.label}-${Date.now()}`,
+      id: `${pizza.id}-${selectedSize}-${Date.now()}`,
       name: pizza.name,
       category: "signature-pizza",
-      price: selected.amount,
-      size: selected.label,
+      price: pizza.prices[selectedSize],
+      size: sizeInfo.full,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -157,24 +156,30 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
           <span className="text-base">👑</span>
           <h3 className="font-display text-lg text-amber-300 leading-tight">{pizza.name}</h3>
         </div>
+        <span className="shrink-0 text-xs text-cream/45">from {formatCurrency(pizza.prices.S)}</span>
       </div>
       <p className="text-sm text-cream/70 leading-relaxed mb-4 flex-1">{pizza.toppings}</p>
-      <div className="flex gap-2 mb-3">
-        {pizza.prices.map((p, i) => (
+
+      {/* Size selector - all 5 sizes */}
+      <div className="grid grid-cols-5 gap-1 mb-3">
+        {sizeLabels.map(({ key, short }) => (
           <button
-            key={p.label}
-            onClick={() => setSelectedIdx(i)}
-            className={`flex-1 rounded-lg border py-2 text-xs transition-all ${
-              selectedIdx === i
-                ? "border-amber-500/60 bg-amber-900/30 text-amber-300 font-bold"
-                : "border-gold/20 text-cream/60 hover:border-gold/40"
+            key={key}
+            onClick={() => setSelectedSize(key)}
+            className={`flex flex-col items-center rounded-lg border py-1.5 transition-all duration-200 ${
+              selectedSize === key
+                ? "border-amber-500/60 bg-amber-900/30 shadow-[0_0_10px_rgba(201,154,58,0.2)]"
+                : "border-gold/20 bg-charcoal/40 hover:border-gold/40"
             }`}
           >
-            <div>{p.label}</div>
-            <div className="font-semibold">${p.amount.toFixed(2)}</div>
+            <span className={`text-[10px] font-bold uppercase ${selectedSize === key ? "text-amber-300" : "text-cream/50"}`}>{short}</span>
+            <span className={`text-xs font-semibold ${selectedSize === key ? "text-amber-300" : "text-cream/70"}`}>
+              ${pizza.prices[key].toFixed(2)}
+            </span>
           </button>
         ))}
       </div>
+
       <div className="relative">
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -182,7 +187,7 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
           onClick={handleAdd}
           className="w-full rounded-lg bg-amber-900/30 border border-amber-600/40 py-2.5 text-sm font-bold text-amber-300 transition-all hover:bg-amber-900/50 hover:border-amber-500/60"
         >
-          Add to Cart — {formatCurrency(selected.amount)}
+          Add to Cart — {formatCurrency(pizza.prices[selectedSize])}
         </motion.button>
         <AddedBadge show={added} />
       </div>

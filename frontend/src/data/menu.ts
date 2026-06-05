@@ -57,41 +57,49 @@ export const STARTERS: SimpleMenuItem[] = [
   {
     id: "mozz-sticks",
     name: "Mozzarella Sticks",
+    price: 9.93,
     description: "Served with marinara sauce",
   },
   {
     id: "jal-poppers",
     name: "Jalapeño Poppers",
+    price: 9.93,
     description: "Cream cheese filled jalapeños served with ranch",
   },
   {
     id: "popcorn-shrimp",
     name: "Crispy Popcorn Shrimp",
+    price: 12.93,
     description: "Served with cocktail sauce",
   },
   {
     id: "chicken-tenders-starter",
     name: "Chicken Tenders",
-    description: "Served with plum sauce",
+    price: 15.93,
+    description: "Served with Fries and Plum sauce",
   },
   {
     id: "garlic-bread-cheese",
     name: "Garlic Bread with Cheese",
+    price: 6.93,
     description: "Add Bacon +$2",
   },
   {
     id: "bruschetta-starter",
     name: "Bruschetta",
+    price: 10.93,
     description: "Toasted garlic bread topped with tomato bruschetta mix, parmesan",
   },
   {
     id: "spinach-dip",
     name: "Spinach Dip",
+    price: 14.93,
     description: "Creamy spinach dip served with tortilla chips & Naan Bread",
   },
   {
     id: "royal-nachos",
     name: "Royal Nachos",
+    price: 14.93,
     description: "Loaded with cheese, tomatoes, onions, jalapeños & green peppers (Add Chicken or Beef)",
   },
 ];
@@ -99,9 +107,9 @@ export const STARTERS: SimpleMenuItem[] = [
 // ─── SIDES ─────────────────────────────────────────────────────────────────────
 
 export const SIDES: SimpleMenuItem[] = [
-  { id: "fries", name: "Crispy Fries", price: 6.93, note: "Medium +$2" },
-  { id: "rings", name: "Onion Rings", price: 8.93, note: "Medium +$2" },
-  { id: "wedges", name: "Seasoned Potato Wedges", price: 8.93, note: "Medium +$2" },
+  { id: "fries", name: "Crispy Fries", price: 6.93, note: "Large +$2" },
+  { id: "rings", name: "Onion Rings", price: 8.93, note: "Large +$2" },
+  { id: "wedges", name: "Seasoned Potato Wedges", price: 8.93, note: "Large +$2" },
 ];
 
 // ─── WINGS ─────────────────────────────────────────────────────────────────────
@@ -205,12 +213,12 @@ export const SPECIALTY_PIZZAS: SpecialtyPizza[] = [
     prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
   },
   {
-    id: "creamy-garlic-chicken",
-    name: "Creamy Garlic Chicken",
-    startingAt: 17.93,
-    sauce: "Creamy Garlic",
-    toppings: "Chicken, Onions, Mushroom & Green Peppers",
-    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 35.93 },
+    id: "hockey",
+    name: "Hockey",
+    startingAt: 15.93,
+    sauce: "Tomato",
+    toppings: "Double Cheese, Double Pepperoni & Mushrooms",
+    prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
   },
   {
     id: "meat-lovers",
@@ -236,6 +244,14 @@ export const SPECIALTY_PIZZAS: SpecialtyPizza[] = [
     toppings: "Ham, Pineapple & Extra Cheese",
     prices: { S: 15.93, M: 19.93, L: 23.93, XL: 27.93, P: 31.93 },
   },
+  {
+    id: "greek-pizza",
+    name: "Greek",
+    startingAt: 16.93,
+    sauce: "Tomato",
+    toppings: "Onions, Tomatoes, Black Olives & Feta Cheese",
+    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
+  },
 ];
 
 // ─── SIGNATURE PIZZAS ──────────────────────────────────────────────────────────
@@ -244,7 +260,7 @@ export type SignaturePizza = {
   id: string;
   name: string;
   toppings: string;
-  prices: { label: string; amount: number }[];
+  prices: PizzaPrices;
 };
 
 export const SIGNATURE_PIZZAS: SignaturePizza[] = [
@@ -252,46 +268,43 @@ export const SIGNATURE_PIZZAS: SignaturePizza[] = [
     id: "vodka-sauce-pizza",
     name: "Vodka Sauce Pizza",
     toppings: "Vodka sauce, mozzarella, cup & char pepperoni, parmigiano, basil & hot honey drizzle",
-    prices: [
-      { label: "Small", amount: 17.93 },
-      { label: "Medium", amount: 21.93 },
-    ],
+    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
   },
   {
     id: "rosee-sauce-pizza",
     name: "Rosée Sauce Pizza",
     toppings: "Rosé sauce, mozzarella, Italian sausage, ricotta, parmesan & basil",
-    prices: [
-      { label: "Small", amount: 17.93 },
-      { label: "Medium", amount: 21.93 },
-    ],
+    prices: { S: 16.93, M: 20.93, L: 24.93, XL: 28.93, P: 32.93 },
   },
   {
     id: "spicy-italian-sig",
     name: "Spicy Italian",
-    toppings: "Tomato sauce, mozzarella, calabrese salami, green peppers, banana peppers, chili flakes & hot honey",
-    prices: [
-      { label: "Small", amount: 17.93 },
-      { label: "Medium", amount: 22.43 },
-    ],
+    toppings: "Tomato sauce, mozzarella, calabrese salami, Green Peppers, banana peppers, chili flakes & hot honey",
+    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 34.93 },
   },
   {
     id: "burrata-margherita",
     name: "Burrata Margherita",
-    toppings: "Tomato sauce, fresh mozzarella, burrata, basil & olive oil",
-    prices: [
-      { label: "Small", amount: 16.93 },
-      { label: "Medium", amount: 21.43 },
-    ],
+    toppings: "Tomato sauce, Fresh mozzarella, burrata, basil & olive oil",
+    prices: { S: 16.93, M: 21.43, L: 25.93, XL: 30.43, P: 34.93 },
   },
   {
     id: "truffle-mushroom",
     name: "Truffle Mushroom",
     toppings: "Roasted garlic cream sauce, mozzarella, roasted mushrooms, parmesan, truffle oil",
-    prices: [
-      { label: "Small", amount: 16.93 },
-      { label: "Medium", amount: 21.43 },
-    ],
+    prices: { S: 16.93, M: 21.43, L: 25.93, XL: 30.43, P: 34.93 },
+  },
+  {
+    id: "creamy-garlic-chicken-sig",
+    name: "Creamy Garlic Chicken",
+    toppings: "Creamy garlic sauce, chicken, onions & Green Peppers - HOT or BBQ Drizzle on Top",
+    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 35.93 },
+  },
+  {
+    id: "bbq-chicken-sig",
+    name: "BBQ Chicken",
+    toppings: "BBQ sauce, chicken, onions & Green Peppers",
+    prices: { S: 17.93, M: 22.43, L: 26.93, XL: 31.43, P: 35.93 },
   },
 ];
 

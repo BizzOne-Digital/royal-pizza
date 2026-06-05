@@ -253,6 +253,141 @@ function ByoPizzaBuilder() {
   );
 }
 
+
+// ─── BUILD YOUR OWN PASTA BUILDER ──────────────────────────────────────────
+function ByoPastaBuilder() {
+  const { addItem } = useCart();
+  const [pasta, setPasta] = useState("Penne");
+  const [sauce, setSauce] = useState("Marinara");
+  const [protein, setProtein] = useState<string | null>(null);
+  const [cook, setCook] = useState("Just in Sauce (No Cheese)");
+  const [added, setAdded] = useState(false);
+
+  const pastaOptions = [
+    { name: "Penne", extra: 0 },
+    { name: "Rigatoni", extra: 0 },
+    { name: "Spaghetti", extra: 0 },
+    { name: "Fettuccine", extra: 0 },
+    { name: "Ravioli", extra: 1 },
+  ];
+  const sauceOptions = [
+    { name: "Marinara", extra: 0 },
+    { name: "Rosé", extra: 2 },
+    { name: "Alfredo", extra: 2 },
+    { name: "Vodka", extra: 2 },
+  ];
+  const proteinOptions = [
+    { name: "Crispy Chicken or Veal Cutlet", extra: 4 },
+    { name: "Beef, Sausage or Bacon", extra: 1.5 },
+    { name: "Meatballs", extra: 5 },
+  ];
+  const cookOptions = [
+    { name: "Baked — Loaded with Mozzarella & Pepperoni", extra: 2 },
+    { name: "Just in Sauce (No Cheese)", extra: 0 },
+    { name: "Topped with just Parmesan", extra: 1 },
+    { name: "Topped with Mozzarella and Parmesan", extra: 2 },
+  ];
+
+  const base = BUILD_YOUR_OWN_PASTA.startingAt;
+  const pastaExtra = pastaOptions.find((p) => p.name === pasta)?.extra ?? 0;
+  const sauceExtra = sauceOptions.find((s) => s.name === sauce)?.extra ?? 0;
+  const proteinExtra = protein ? (proteinOptions.find((p) => p.name === protein)?.extra ?? 0) : 0;
+  const cookExtra = cookOptions.find((c) => c.name === cook)?.extra ?? 0;
+  const total = base + pastaExtra + sauceExtra + proteinExtra + cookExtra;
+
+  const handleAdd = () => {
+    const parts = [pasta, sauce, protein, cook].filter(Boolean).join(", ");
+    addItem({
+      id: `byo-pasta-${Date.now()}`,
+      name: `Build Your Own Pasta`,
+      category: "pasta",
+      price: total,
+      notes: parts,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-[#1c1a14] to-charcoal/90 p-6 space-y-5">
+      <span className="text-gold font-bold">Starting at {formatCurrency(base)}</span>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Pasta */}
+        <div className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+          <p className="text-sm font-bold text-gold mb-3">🍝 Choose Your Pasta</p>
+          <div className="flex flex-wrap gap-1.5">
+            {pastaOptions.map((p) => (
+              <button key={p.name} onClick={() => setPasta(p.name)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${pasta === p.name ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+              >{p.name}{p.extra > 0 ? ` (+$${p.extra})` : ""}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Sauce */}
+        <div className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+          <p className="text-sm font-bold text-gold mb-3">🍅 Choose Your Sauce</p>
+          <div className="flex flex-wrap gap-1.5">
+            {sauceOptions.map((s) => (
+              <button key={s.name} onClick={() => setSauce(s.name)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${sauce === s.name ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+              >{s.name}{s.extra > 0 ? ` (+$${s.extra})` : ""}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Protein */}
+        <div className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+          <p className="text-sm font-bold text-gold mb-3">🥩 Add Protein <span className="font-normal text-cream/40">(optional)</span></p>
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => setProtein(null)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${protein === null ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+            >None</button>
+            {proteinOptions.map((p) => (
+              <button key={p.name} onClick={() => setProtein(p.name)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${protein === p.name ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+              >{p.name} (+${p.extra})</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Way to Cook */}
+        <div className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+          <p className="text-sm font-bold text-gold mb-3">🧀 Way to Cook</p>
+          <div className="flex flex-wrap gap-1.5">
+            {cookOptions.map((c) => (
+              <button key={c.name} onClick={() => setCook(c.name)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-all text-left ${cook === c.name ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+              >{c.name}{c.extra > 0 ? ` (+$${c.extra})` : ""}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Total + Add */}
+      <div className="flex items-center justify-between border-t border-gold/15 pt-4">
+        <div>
+          <p className="text-xs text-cream/50">Estimated Total</p>
+          <p className="text-2xl font-bold text-gold">{formatCurrency(total)}</p>
+        </div>
+        <div className="relative">
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={handleAdd}
+            className="rounded-xl border border-gold/40 bg-gold/15 px-6 py-3 text-sm font-bold text-gold hover:bg-gold/25 hover:border-gold/65 transition-all"
+          >Add to Cart — {formatCurrency(total)}</motion.button>
+          <AnimatePresence>
+            {added && (
+              <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center rounded-xl bg-green-900/80 text-xs font-bold text-green-300 pointer-events-none"
+              >✓ Added!</motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export function MenuPageClient() {
   const searchParams = useSearchParams();
@@ -311,8 +446,6 @@ export function MenuPageClient() {
             <CategoryHero id="starters" />
             <SectionTitle>Starters</SectionTitle>
             <div className="space-y-2">{fs(STARTERS).map((i) => <StarterCard key={i.id} item={i} />)}</div>
-            <SubTitle>Sides</SubTitle>
-            <div className="space-y-2">{fs(SIDES).map((i) => <SimpleItemCard key={i.id} item={i} category="side" />)}</div>
           </motion.section>
         )}
 
@@ -334,7 +467,7 @@ export function MenuPageClient() {
           <motion.section key="sig-pizzas" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-4">
             <CategoryHero id="signature-pizzas" />
             <SectionTitle>Signature Pizzas</SectionTitle>
-            <p className="text-xs text-cream/45 -mt-2">Available in Small & Medium only</p>
+            <p className="text-xs text-cream/45 -mt-2">{PIZZA_SIZE_LEGEND}</p>
             <div className="grid gap-4 md:grid-cols-2">
               {filteredSig.map((p) => <SignaturePizzaCard key={p.id} pizza={p} />)}
             </div>
@@ -377,29 +510,7 @@ export function MenuPageClient() {
             <div className="space-y-2">{fs(PASTA_ADDONS).map((i) => <SimpleItemCard key={i.id} item={i} category="pasta-addon" />)}</div>
             {/* Build Your Own Pasta */}
             <SubTitle>Build Your Own Pasta</SubTitle>
-            <div className="rounded-2xl border border-gold/20 bg-charcoal/60 p-5 space-y-4">
-              <span className="text-gold font-bold">Starting at {formatCurrency(BUILD_YOUR_OWN_PASTA.startingAt)}</span>
-              <div className="grid gap-3 md:grid-cols-2 mt-3">
-                {[
-                  { label: "🍝 Choose Your Pasta", items: BUILD_YOUR_OWN_PASTA.pastas },
-                  { label: "🍅 Choose Your Sauce", items: BUILD_YOUR_OWN_PASTA.sauces },
-                  { label: "🥩 Add Protein", items: BUILD_YOUR_OWN_PASTA.proteins },
-                  { label: "🧀 Way to Cook", items: BUILD_YOUR_OWN_PASTA.wayToCook },
-                ].map(({ label, items }) => (
-                  <div key={label} className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
-                    <p className="text-sm font-bold text-gold mb-2">{label}</p>
-                    <ul className="space-y-1">
-                      {items.map((item) => (
-                        <li key={item} className="text-xs text-cream/70 flex items-start gap-1.5">
-                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold/50" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ByoPastaBuilder />
           </motion.section>
         )}
 
