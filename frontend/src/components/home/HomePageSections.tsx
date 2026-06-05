@@ -459,7 +459,7 @@ export function HomePageSections() {
                     href="/contact"
                     className="block rounded-md border-2 border-gold py-3 text-center font-semibold text-gold hover:bg-gold/10"
                   >
-                    Contact & directions
+                    Contact & directionss
                   </Link>
                 </motion.div>
               </div>
