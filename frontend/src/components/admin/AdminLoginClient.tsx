@@ -107,9 +107,7 @@ export function AdminLoginClient() {
             ) : "Sign In"}
           </motion.button>
 
-          <p className="text-center text-xs text-cream/25">
-            Demo: admin@bariis.com / admin123
-          </p>
+      
         </div>
       </motion.div>
     </div>
