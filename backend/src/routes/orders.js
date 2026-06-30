@@ -3,6 +3,32 @@ const router = express.Router();
 const { body, validationResult } = require("express-validator");
 
 const Order = require("../models/Order");
+const { validateDeliveryAddress } = require("../lib/deliveryValidation");
+
+// ─────────────────────────────────────────────────────────────
+// POST /api/orders/validate-delivery — Validate Georgetown Delivery Eligibility
+// ─────────────────────────────────────────────────────────────
+router.post("/validate-delivery", async (req, res) => {
+  try {
+    const { address } = req.body || {};
+    const result = await validateDeliveryAddress(address);
+
+    if (!result.allowed) {
+      return res.status(400).json({
+        allowed: false,
+        message: result.message,
+      });
+    }
+
+    res.json({ allowed: true, message: result.message });
+  } catch (err) {
+    console.error("❌ Delivery validation error:", err);
+    res.status(500).json({
+      allowed: false,
+      message: "Sorry, we currently deliver only within Georgetown.",
+    });
+  }
+});
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/orders — Place New Order
@@ -40,6 +66,16 @@ router.post(
     }
 
     try {
+      const isDeliveryOrder = req.body.orderType === "delivery";
+      if (isDeliveryOrder) {
+        const deliveryCheck = await validateDeliveryAddress(req.body.deliveryAddress);
+        if (!deliveryCheck.allowed) {
+          return res.status(400).json({
+            message: deliveryCheck.message,
+          });
+        }
+      }
+
       const order = new Order(req.body);
 
       await order.save();

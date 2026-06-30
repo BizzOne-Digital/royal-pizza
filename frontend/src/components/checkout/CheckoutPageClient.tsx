@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/format";
 
+const DELIVERY_RESTRICTION_MESSAGE = "Sorry, we currently deliver only within Georgetown.";
+
 const ease = [0.22, 1, 0.36, 1] as const;
 
 type OrderType = "pickup" | "delivery";
@@ -22,9 +24,17 @@ type FormData = {
   notes: string;
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const DEFAULT_BACKEND_URL = "http://localhost:4000";
+const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_BACKEND_URL).replace(/\/+$/, "");
 
 export function CheckoutPageClient() {
+  const resolveBackendUrl = () => {
+    if (typeof window === "undefined") return BACKEND_URL;
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return DEFAULT_BACKEND_URL;
+    }
+    return BACKEND_URL;
+  };
   const { items, totalPrice, totalItems, clearCart } = useCart();
   const router = useRouter();
   const [form, setForm] = useState<FormData>({
@@ -57,15 +67,54 @@ export function CheckoutPageClient() {
     return e;
   };
 
+  const validateDeliveryLocation = async () => {
+    if (form.orderType !== "delivery") return { allowed: true };
+
+    const trimmedAddress = form.address.trim();
+    if (!trimmedAddress) {
+      setErrors((prev) => ({ ...prev, address: "Delivery address is required" }));
+      return { allowed: false };
+    }
+
+    try {
+      const res = await fetch(`${resolveBackendUrl()}/api/orders/validate-delivery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: trimmedAddress }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.allowed) {
+        setErrors((prev) => ({ ...prev, address: data.message ?? DELIVERY_RESTRICTION_MESSAGE }));
+        setServerError(data.message ?? DELIVERY_RESTRICTION_MESSAGE);
+        return { allowed: false };
+      }
+
+      setErrors((prev) => ({ ...prev, address: undefined }));
+      setServerError(null);
+      return { allowed: true };
+    } catch {
+      setErrors((prev) => ({ ...prev, address: DELIVERY_RESTRICTION_MESSAGE }));
+      setServerError(DELIVERY_RESTRICTION_MESSAGE);
+      return { allowed: false };
+    }
+  };
+
   const handleSubmit = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+
+    const deliveryCheck = await validateDeliveryLocation();
+    if (!deliveryCheck.allowed) {
+      return;
+    }
+
     setErrors({});
     setSubmitting(true);
     setServerError(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/orders`, {
+      const res = await fetch(`${resolveBackendUrl()}/api/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
