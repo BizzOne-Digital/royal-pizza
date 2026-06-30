@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const ease = [0.22, 1, 0.36, 1] as const;
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const DEFAULT_BACKEND_URL = "http://localhost:4000";
+const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_BACKEND_URL).replace(/\/+$/, "");
+
+function resolveBackendUrl() {
+  if (typeof window === "undefined") return BACKEND_URL;
+  return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? DEFAULT_BACKEND_URL
+    : BACKEND_URL;
+}
 
 export function AdminLoginClient() {
   const [email, setEmail] = useState("");
@@ -19,7 +27,7 @@ export function AdminLoginClient() {
     if (!email || !password) { setError("Email and password required."); return; }
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/admin/login`, {
+      const res = await fetch(`${resolveBackendUrl()}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
