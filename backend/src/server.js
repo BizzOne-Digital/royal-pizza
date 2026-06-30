@@ -51,6 +51,8 @@ async function connectDB() {
 const allowedOrigins = [
   "https://royal-pizza-xi.vercel.app",
   "https://royal-pizza-api.vercel.app",
+  "https://www.theroyalgeorgetown.ca",
+  "https://theroyalgeorgetown.ca",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:4000",
@@ -62,7 +64,8 @@ app.use(
       // Allow requests without origin
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      const cleanedOrigin = origin.replace(/\/+$/, "");
+      if (allowedOrigins.includes(cleanedOrigin)) {
         return callback(null, true);
       }
 
