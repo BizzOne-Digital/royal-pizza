@@ -41,13 +41,7 @@ export function AdminLoginClient() {
         setError(d.message ?? "Invalid credentials.");
       }
     } catch {
-      // Demo mode — accept demo credentials
-      if (email === "admin@bariis.com" && password === "admin123") {
-        localStorage.setItem("admin_token", "demo_token_" + Date.now());
-        router.push("/admin/dashboard");
-      } else {
-        setError("Demo: use admin@bariis.com / admin123");
-      }
+      setError("Invalid credentials.");
     } finally {
       setLoading(false);
     }
