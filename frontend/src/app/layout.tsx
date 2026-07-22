@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { MobileOrderBar } from "@/components/MobileOrderBar";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/context/CartContext";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 import { SITE } from "@/data/menu";
 import "./globals.css";
 
@@ -53,22 +54,24 @@ export default function RootLayout({
   return (
     <html lang="en-CA" className={`${cinzel.variable} ${sourceSerif.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen bg-charcoal font-body">
-        <CartProvider>
-          <JsonLd />
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-cream focus:px-4 focus:py-2 focus:text-charcoal"
-          >
-            Skip to main content
-          </a>
-          <Header />
-          <CartDrawer />
-          <main id="main-content" className="pb-24 md:pb-0" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
-          <MobileOrderBar />
-        </CartProvider>
+        <CustomerAuthProvider>
+          <CartProvider>
+            <JsonLd />
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-cream focus:px-4 focus:py-2 focus:text-charcoal"
+            >
+              Skip to main content
+            </a>
+            <Header />
+            <CartDrawer />
+            <main id="main-content" className="pb-24 md:pb-0" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+            <MobileOrderBar />
+          </CartProvider>
+        </CustomerAuthProvider>
       </body>
     </html>
   );

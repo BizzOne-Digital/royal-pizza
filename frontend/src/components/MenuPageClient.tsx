@@ -10,6 +10,10 @@ import {
   MENU_CATEGORY_TABS,
   type MenuCategoryId,
   PASTA_ADDONS,
+  PASTA_ADD_MEAT_OPTIONS,
+  PASTA_ADD_MEAT_PRICE,
+  PASTA_ADD_CHICKEN_VEAL_OPTIONS,
+  PASTA_ADD_CHICKEN_VEAL_PRICE,
   PASTAS,
   PIZZA_SIZE_LEGEND,
   SALADS,
@@ -21,11 +25,11 @@ import {
   STARTERS,
   SUBS,
   SUB_EXTRAS,
-  WING_SAUCES,
   WINGS,
   BUILD_YOUR_OWN_TIERS,
   BYO_EXTRAS,
   BYO_TOPPING_PRICING,
+  toppingCount,
 } from "@/data/menu";
 import { CategoryTabs } from "./CategoryTabs";
 import {
@@ -146,31 +150,83 @@ function matches(q: string, ...parts: (string | undefined)[]) {
 function ByoPizzaBuilder() {
   const { addItem } = useCart();
   const [size, setSize] = useState<"S" | "M" | "L" | "XL" | "P">("M");
+  const [style, setStyle] = useState<"whole" | "half">("whole");
   const [toppings, setToppings] = useState<string[]>([]);
+  const [leftToppings, setLeftToppings] = useState<string[]>([]);
+  const [rightToppings, setRightToppings] = useState<string[]>([]);
   const [sauce, setSauce] = useState("Pizza Sauce");
+  const [notes, setNotes] = useState("");
   const [added, setAdded] = useState(false);
 
   const basePrices: Record<string, number> = { S: 12.93, M: 16.93, L: 20.93, XL: 24.93, P: 28.93 };
   const extraPriceMap: Record<string, number> = { S: 1, M: 1.5, L: 2, XL: 2.5, P: 3 };
   const basePrice = basePrices[size];
-  const sauceCost = sauce !== "Pizza Sauce" ? 1 : 0; // non-default sauce = 1 topping cost
-  const allToppings = toppings.length + sauceCost;
-  const firstFour = Math.min(allToppings, 4);
-  const extra = Math.max(0, allToppings - 4);
-  const toppingCost = firstFour * 1 + extra * (extraPriceMap[size] ?? 1);
+  const extraUnit = extraPriceMap[size] ?? 1;
+  const sauceUnits = sauce !== "Pizza Sauce" ? 1 : 0; // non-default sauce = 1 topping unit
+
+  const toppingUnits = (list: string[]) => list.reduce((sum, t) => sum + toppingCount(t), 0);
+
+  // Half & half toppings are priced at half the normal per-side rate (2 halves = 1 whole topping's worth of units).
+  const wholeUnits = toppingUnits(toppings) + sauceUnits;
+  const halfUnits = style === "half" ? (toppingUnits(leftToppings) + toppingUnits(rightToppings)) / 2 : 0;
+  const allUnits = wholeUnits + halfUnits;
+  const firstFour = Math.min(allUnits, 4);
+  const extra = Math.max(0, allUnits - 4);
+  const toppingCost = firstFour * 1 + extra * extraUnit;
   const total = basePrice + toppingCost;
 
   const toggleTopping = (t: string) =>
     setToppings((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+  const toggleLeft = (t: string) =>
+    setLeftToppings((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+  const toggleRight = (t: string) =>
+    setRightToppings((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
   const sizeKeys = ["S", "M", "L", "XL", "P"] as const;
   const sizeNames: Record<string, string> = { S: "Small", M: "Medium", L: "Large", XL: "Jumbo", P: "Party" };
 
   const handleAdd = () => {
-    addItem({ id: `byo-${size}-${Date.now()}`, name: `Build Your Own Pizza (${sizeNames[size]})`, category: "pizza", price: total, size: sizeNames[size] });
+    const parts: string[] = [];
+    if (style === "half") {
+      parts.push(`Left: ${leftToppings.join(", ") || "none"}`, `Right: ${rightToppings.join(", ") || "none"}`);
+    }
+    if (notes.trim()) parts.push(notes.trim());
+    addItem({
+      id: `byo-${size}-${Date.now()}`,
+      name: `Build Your Own Pizza (${sizeNames[size]})`,
+      category: "pizza",
+      price: total,
+      size: sizeNames[size],
+      notes: parts.length ? parts.join(" · ") : undefined,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
+
+  const toppingGroups = [
+    { label: "Vegetarian", items: BYO_TOPPINGS.vegetarian },
+    { label: "Non-Vegetarian", items: BYO_TOPPINGS.nonVegetarian },
+    { label: "Extra Cheese", items: BYO_TOPPINGS.additionalCheeses },
+  ];
+
+  function ToppingPicker({ selected, onToggle }: { selected: string[]; onToggle: (t: string) => void }) {
+    return (
+      <div className="space-y-3">
+        {toppingGroups.map(({ label, items }) => (
+          <div key={label}>
+            <p className="text-[11px] text-cream/40 uppercase tracking-wide mb-1.5">{label}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {items.map((t) => (
+                <button key={t} onClick={() => onToggle(t)}
+                  className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${selected.includes(t) ? "border-gold bg-gold/18 text-gold font-semibold" : "border-gold/20 text-cream/60 hover:border-gold/40"}`}
+                >{t}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-[#1c1a14] to-charcoal/90 p-6 space-y-5">
@@ -189,6 +245,19 @@ function ByoPizzaBuilder() {
         </div>
       </div>
 
+      {/* Whole vs Half & Half */}
+      <div>
+        <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">Style</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setStyle("whole")}
+            className={`rounded-xl border py-2 text-xs font-semibold transition-all ${style === "whole" ? "border-gold bg-gold/18 text-gold" : "border-gold/20 text-cream/60 hover:border-gold/40"}`}
+          >Whole Pizza</button>
+          <button onClick={() => setStyle("half")}
+            className={`rounded-xl border py-2 text-xs font-semibold transition-all ${style === "half" ? "border-gold bg-gold/18 text-gold" : "border-gold/20 text-cream/60 hover:border-gold/40"}`}
+          >Half &amp; Half <span className="font-normal text-cream/40">(toppings half price per side)</span></button>
+        </div>
+      </div>
+
       {/* Sauce */}
       <div>
         <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">Sauce <span className="font-normal text-cream/40">(counts as 1 topping)</span></p>
@@ -202,29 +271,41 @@ function ByoPizzaBuilder() {
       </div>
 
       {/* Toppings */}
-      <div>
-        <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">
-          Toppings — <span className="text-gold">{toppings.length} selected</span>
-          <span className="text-cream/40 font-normal ml-2">(first 4 = $1 each)</span>
-        </p>
-        <div className="space-y-3">
-          {[
-            { label: "Vegetarian", items: BYO_TOPPINGS.vegetarian },
-            { label: "Non-Vegetarian", items: BYO_TOPPINGS.nonVegetarian },
-            { label: "Extra Cheese", items: BYO_TOPPINGS.additionalCheeses },
-          ].map(({ label, items }) => (
-            <div key={label}>
-              <p className="text-[11px] text-cream/40 uppercase tracking-wide mb-1.5">{label}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {items.map((t) => (
-                  <button key={t} onClick={() => toggleTopping(t)}
-                    className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${toppings.includes(t) ? "border-gold bg-gold/18 text-gold font-semibold" : "border-gold/20 text-cream/60 hover:border-gold/40"}`}
-                  >{t}</button>
-                ))}
-              </div>
-            </div>
-          ))}
+      {style === "whole" ? (
+        <div>
+          <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">
+            Toppings — <span className="text-gold">{toppingUnits(toppings)} counted</span>
+            <span className="text-cream/40 font-normal ml-2">(first 4 = $1 each; items marked &quot;2 Toppings&quot; count double)</span>
+          </p>
+          <ToppingPicker selected={toppings} onToggle={toggleTopping} />
         </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+            <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">
+              Left Side — <span className="text-gold">{toppingUnits(leftToppings)} counted</span>
+            </p>
+            <ToppingPicker selected={leftToppings} onToggle={toggleLeft} />
+          </div>
+          <div className="rounded-xl border border-gold/15 bg-charcoal/50 p-4">
+            <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">
+              Right Side — <span className="text-gold">{toppingUnits(rightToppings)} counted</span>
+            </p>
+            <ToppingPicker selected={rightToppings} onToggle={toggleRight} />
+          </div>
+        </div>
+      )}
+
+      {/* Special request */}
+      <div>
+        <p className="text-xs font-bold text-gold/70 uppercase tracking-wider mb-2">Special Request</p>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Light on cheese, well done, remove an ingredient… (optional)"
+          rows={2}
+          className="w-full rounded-lg border border-gold/20 bg-charcoal/50 px-3 py-2 text-xs text-cream/80 placeholder:text-cream/30 outline-none focus:border-gold/45 resize-none transition-colors"
+        />
       </div>
 
       {/* Total + Add */}
@@ -232,8 +313,8 @@ function ByoPizzaBuilder() {
         <div>
           <p className="text-xs text-cream/50">Estimated Total</p>
           <p className="text-2xl font-bold text-gold">{formatCurrency(total)}</p>
-          {toppings.length > 0 && (
-            <p className="text-[11px] text-cream/40">Base {formatCurrency(basePrice)} + {allToppings} topping{allToppings !== 1 ? "s" : ""} {formatCurrency(toppingCost)}</p>
+          {allUnits > 0 && (
+            <p className="text-[11px] text-cream/40">Base {formatCurrency(basePrice)} + {allUnits} topping{allUnits !== 1 ? "s" : ""} {formatCurrency(toppingCost)}</p>
           )}
         </div>
         <div className="relative">
@@ -254,13 +335,62 @@ function ByoPizzaBuilder() {
 }
 
 
+// ─── PASTA "ADD MEAT" PICKER (customer must say which meat, since pricing differs) ──
+function PastaAddMeatCard({ options, price, label }: { options: readonly string[]; price: number; label: string }) {
+  const { addItem } = useCart();
+  const [choice, setChoice] = useState(options[0]);
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    addItem({ id: `pasta-addmeat-${choice}-${Date.now()}`, name: `${label}: ${choice}`, category: "pasta-addon", price });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, x: -8 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-12px" }}
+      transition={{ duration: 0.38 }}
+      className="rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-3.5 transition-all hover:border-gold/40"
+    >
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <h3 className="font-display text-base text-cream">{label}</h3>
+        <span className="text-base font-bold text-gold">{formatCurrency(price)}</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {options.map((o) => (
+          <button key={o} onClick={() => setChoice(o)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${choice === o ? "border-gold bg-gold/18 text-gold" : "border-gold/25 text-cream/65 hover:border-gold/50"}`}
+          >{o}</button>
+        ))}
+      </div>
+      <div className="relative">
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleAdd}
+          className="w-full rounded-lg border border-gold/35 bg-gold/10 py-2 text-xs font-bold text-gold transition-all hover:bg-gold/22 hover:border-gold/60"
+        >+ Add {choice} — {formatCurrency(price)}</motion.button>
+        <AnimatePresence>
+          {added && (
+            <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center rounded-lg bg-green-900/80 text-xs font-bold text-green-300 pointer-events-none"
+            >✓ Added!</motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.article>
+  );
+}
+
 // ─── BUILD YOUR OWN PASTA BUILDER ──────────────────────────────────────────
 function ByoPastaBuilder() {
   const { addItem } = useCart();
   const [pasta, setPasta] = useState("Penne");
   const [sauce, setSauce] = useState("Marinara");
+  // Chicken/veal and beef/sausage/bacon are priced differently, so the customer must pick a specific protein — not just a category.
   const [protein, setProtein] = useState<string | null>(null);
   const [cook, setCook] = useState("Just in Sauce (No Cheese)");
+  const [notes, setNotes] = useState("");
   const [added, setAdded] = useState(false);
 
   const pastaOptions = [
@@ -275,11 +405,12 @@ function ByoPastaBuilder() {
     { name: "Rosé", extra: 2 },
     { name: "Alfredo", extra: 2 },
     { name: "Vodka", extra: 2 },
+    { name: "Pesto", extra: 2 },
   ];
   const proteinOptions = [
-    { name: "Crispy Chicken or Veal Cutlet", extra: 4 },
-    { name: "Beef, Sausage or Bacon", extra: 1.5 },
-    { name: "Meatballs", extra: 5 },
+    ...BUILD_YOUR_OWN_PASTA.chickenOrVeal.map((name) => ({ name, extra: BUILD_YOUR_OWN_PASTA.proteinPricing.chickenOrVeal })),
+    ...BUILD_YOUR_OWN_PASTA.meatProteins.map((name) => ({ name, extra: BUILD_YOUR_OWN_PASTA.proteinPricing.meatProteins })),
+    { name: "Meatballs", extra: BUILD_YOUR_OWN_PASTA.proteinPricing.meatballs },
   ];
   const cookOptions = [
     { name: "Baked — Loaded with Mozzarella & Pepperoni", extra: 2 },
@@ -296,7 +427,7 @@ function ByoPastaBuilder() {
   const total = base + pastaExtra + sauceExtra + proteinExtra + cookExtra;
 
   const handleAdd = () => {
-    const parts = [pasta, sauce, protein, cook].filter(Boolean).join(", ");
+    const parts = [pasta, sauce, protein, cook, notes.trim() || null].filter(Boolean).join(", ");
     addItem({
       id: `byo-pasta-${Date.now()}`,
       name: `Build Your Own Pasta`,
@@ -363,6 +494,18 @@ function ByoPastaBuilder() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Special request */}
+      <div>
+        <p className="text-sm font-bold text-gold mb-2">Special Request</p>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Extra sauce on the side, no onions… (optional)"
+          rows={2}
+          className="w-full rounded-lg border border-gold/20 bg-charcoal/50 px-3 py-2 text-xs text-cream/80 placeholder:text-cream/30 outline-none focus:border-gold/45 resize-none transition-colors"
+        />
       </div>
 
       {/* Total + Add */}
@@ -507,7 +650,11 @@ export function MenuPageClient() {
             <SubTitle>Signature Pastas</SubTitle>
             <div className="space-y-2">{fs(SIGNATURE_PASTAS).map((i) => <SimpleItemCard key={i.id} item={i} category="signature-pasta" />)}</div>
             <SubTitle>Pasta Add-Ons</SubTitle>
-            <div className="space-y-2">{fs(PASTA_ADDONS).map((i) => <SimpleItemCard key={i.id} item={i} category="pasta-addon" />)}</div>
+            <div className="space-y-2">
+              <PastaAddMeatCard options={PASTA_ADD_MEAT_OPTIONS} price={PASTA_ADD_MEAT_PRICE} label="Add Meat (Bacon, Sausage or Beef)" />
+              <PastaAddMeatCard options={PASTA_ADD_CHICKEN_VEAL_OPTIONS} price={PASTA_ADD_CHICKEN_VEAL_PRICE} label="Add Chicken or Veal" />
+              {fs(PASTA_ADDONS).map((i) => <SimpleItemCard key={i.id} item={i} category="pasta-addon" />)}
+            </div>
             {/* Build Your Own Pasta */}
             <SubTitle>Build Your Own Pasta</SubTitle>
             <ByoPastaBuilder />
@@ -519,15 +666,7 @@ export function MenuPageClient() {
           <motion.section key="wings" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={panel} className="mt-8 space-y-3">
             <CategoryHero id="wings" />
             <SectionTitle>Wings</SectionTitle>
-            <div className="space-y-2">{fs(WINGS).map((i) => <WingsCard key={i.id} item={i} />)}</div>
-            <SubTitle>Available Sauces</SubTitle>
-            <div className="rounded-xl border border-gold/20 bg-charcoal/60 px-5 py-4">
-              <div className="flex flex-wrap gap-2">
-                {WING_SAUCES.split(", ").map((s) => (
-                  <span key={s} className="rounded-full border border-gold/25 bg-gold/8 px-3 py-1 text-xs text-gold/80">{s}</span>
-                ))}
-              </div>
-            </div>
+            <div className="space-y-3">{fs(WINGS).map((i) => <WingsCard key={i.id} item={i} />)}</div>
           </motion.section>
         )}
 

@@ -4,27 +4,24 @@ import { motion } from "framer-motion";
 import { DealCard } from "@/components/DealCard";
 import { Reveal } from "@/components/motion/Reveal";
 import { DEALS } from "@/data/site-content";
-import { PIZZA_DEALS, SITE } from "@/data/menu";
+import { SITE } from "@/data/menu";
+import { useDeals } from "@/lib/useDeals";
 
-const BUNDLE_DEALS = PIZZA_DEALS.filter((d) =>
-  ["d2s", "d2m", "d2l", "d2j", "d2p"].includes(d.id)
-);
-const COMBO_DEALS = PIZZA_DEALS.filter((d) =>
-  [
-    "traditional",
-    "family",
-    "get-together",
-    "game",
-    "party",
-    "kids",
-    "med-wings",
-    "sub-special",
-    "2lasagna",
-    "2spag",
-  ].includes(d.id)
-);
+const STATIC_BUNDLE_IDS = ["d2s", "d2m", "d2l", "d2j", "d2p"];
 
 export function PizzaDealsPageBody() {
+  const { deals, source } = useDeals();
+
+  const bundleDeals = deals.filter((d) =>
+    source === "api" ? d.group === "bundle" : STATIC_BUNDLE_IDS.includes(d.id)
+  );
+  const weekdayDeals = deals.filter((d) => source === "api" && d.group === "weekday");
+  const comboDeals = deals.filter((d) =>
+    source === "api"
+      ? d.group === "combo"
+      : !STATIC_BUNDLE_IDS.includes(d.id)
+  );
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
 
@@ -38,6 +35,23 @@ export function PizzaDealsPageBody() {
         </div>
       </Reveal>
 
+      {/* Weekday Specials Section */}
+      {weekdayDeals.length > 0 && (
+        <Reveal className="mt-14" delay={0.04}>
+          <div className="mb-6 flex items-center gap-4">
+            <h3 className="font-display text-xl text-cream">Weekday Specials</h3>
+            <div className="h-px flex-1 bg-gold/25" />
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {weekdayDeals.map((d, i) => (
+              <Reveal key={d.id} delay={0.04 * (i % 3)}>
+                <DealCard deal={d} />
+              </Reveal>
+            ))}
+          </div>
+        </Reveal>
+      )}
+
       {/* Pizza Bundles Section */}
       <Reveal className="mt-14" delay={0.04}>
         <div className="mb-6 flex items-center gap-4">
@@ -45,7 +59,7 @@ export function PizzaDealsPageBody() {
           <div className="h-px flex-1 bg-gold/25" />
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {BUNDLE_DEALS.map((d, i) => (
+          {bundleDeals.map((d, i) => (
             <Reveal key={d.id} delay={0.04 * (i % 3)}>
               <DealCard deal={d} />
             </Reveal>
@@ -60,7 +74,7 @@ export function PizzaDealsPageBody() {
           <div className="h-px flex-1 bg-gold/25" />
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {COMBO_DEALS.map((d, i) => (
+          {comboDeals.map((d, i) => (
             <Reveal key={d.id} delay={0.04 * (i % 3)}>
               <DealCard deal={d} />
             </Reveal>
@@ -88,8 +102,6 @@ export function PizzaDealsPageBody() {
         </Reveal>
         <motion.a
           href={SITE.orderUrl}
-          target="_blank"
-          rel="noopener noreferrer"
           whileHover={{ scale: 1.04, boxShadow: "0 0 28px rgba(201,154,58,0.3)" }}
           whileTap={{ scale: 0.97 }}
           className="ribbon-red rounded-md px-6 py-3 text-sm font-semibold text-cream"

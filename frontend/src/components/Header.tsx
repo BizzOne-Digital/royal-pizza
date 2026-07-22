@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SITE } from "@/data/menu";
 import { CartButton } from "@/components/cart/CartButton";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 const nav = [
   { href: "/", label: "Home" },
@@ -27,6 +28,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { scrollY } = useScroll();
+  const { customer } = useCustomerAuth();
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setScrolled(y > 12);
@@ -118,6 +120,12 @@ export function Header() {
           >
             {SITE.phones[0].display}
           </motion.a>
+          <Link
+            href={customer ? "/account/orders" : "/account/login"}
+            className="hidden rounded-md border border-gold/25 px-3 py-2 text-sm text-cream/80 transition-colors hover:border-gold/50 hover:text-gold sm:inline-flex"
+          >
+            {customer ? customer.name.split(" ")[0] : "Sign In"}
+          </Link>
           <CartButton />
           <motion.button
             type="button"
@@ -175,10 +183,14 @@ export function Header() {
                   </Link>
                 </motion.div>
               ))}
+              <Link
+                href={customer ? "/account/orders" : "/account/login"}
+                className="block rounded-md px-2 py-3 text-base text-cream transition hover:bg-umber/60 hover:text-gold"
+              >
+                {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Sign In / My Orders"}
+              </Link>
               <motion.a
                 href={SITE.orderUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.35 }}

@@ -1,11 +1,28 @@
 "use client";
 
 import type { PizzaDeal } from "@/data/menu";
+import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/format";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { useState } from "react";
 
 export function DealCard({ deal }: { deal: PizzaDeal }) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+  const orderable = deal.orderableOnline !== false;
+
+  const handleAdd = () => {
+    addItem({
+      id: `deal-${deal.id}-${Date.now()}`,
+      name: deal.title,
+      category: "deal",
+      price: deal.price,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
   return (
     <motion.article
       layout
@@ -52,6 +69,41 @@ export function DealCard({ deal }: { deal: PizzaDeal }) {
       <div className="p-5">
         <h3 className="font-display text-xl text-charcoal">{deal.title}</h3>
         <p className="mt-2 text-sm leading-relaxed text-umber/90">{deal.description}</p>
+
+        {deal.availableDays && deal.availableDays.length > 0 && (
+          <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-royal-red/80">
+            Available: {deal.availableDays.join(", ")}
+          </p>
+        )}
+
+        {orderable ? (
+          <div className="relative mt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleAdd}
+              className="w-full rounded-md border border-umber/30 bg-charcoal/90 py-2.5 text-sm font-bold text-gold transition-all hover:border-gold/60"
+            >
+              Add to Cart — {formatCurrency(deal.price)}
+            </motion.button>
+            <AnimatePresence>
+              {added && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 flex items-center justify-center rounded-md bg-green-900/85 text-xs font-bold text-green-300 pointer-events-none"
+                >
+                  ✓ Added to Cart
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <p className="mt-4 text-xs italic text-umber/60">
+            Call or visit in-store to order this deal.
+          </p>
+        )}
       </div>
     </motion.article>
   );

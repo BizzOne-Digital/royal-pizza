@@ -117,8 +117,6 @@ export function WhyPageBody() {
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <motion.a
             href={SITE.orderUrl}
-            target="_blank"
-            rel="noopener noreferrer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             className="ribbon-red rounded-md px-8 py-3 font-semibold text-cream"

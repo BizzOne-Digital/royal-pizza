@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatCurrency } from "@/lib/format";
 
 const DELIVERY_RESTRICTION_MESSAGE = "Sorry, we currently deliver only within Georgetown.";
@@ -12,7 +13,7 @@ const DELIVERY_RESTRICTION_MESSAGE = "Sorry, we currently deliver only within Ge
 const ease = [0.22, 1, 0.36, 1] as const;
 
 type OrderType = "pickup" | "delivery";
-type PaymentType = "cash" | "card";
+type PaymentType = "cash";
 
 type FormData = {
   name: string;
@@ -36,11 +37,12 @@ export function CheckoutPageClient() {
     return BACKEND_URL;
   };
   const { items, totalPrice, totalItems, clearCart } = useCart();
+  const { token: customerToken, customer } = useCustomerAuth();
   const router = useRouter();
   const [form, setForm] = useState<FormData>({
-    name: "",
-    phone: "",
-    email: "",
+    name: customer?.name ?? "",
+    phone: customer?.phone ?? "",
+    email: customer?.email ?? "",
     orderType: "pickup",
     address: "",
     paymentMethod: "cash",
@@ -116,7 +118,10 @@ export function CheckoutPageClient() {
     try {
       const res = await fetch(`${resolveBackendUrl()}/api/orders`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(customerToken ? { Authorization: `Bearer ${customerToken}` } : {}),
+        },
         body: JSON.stringify({
           customer: {
             name: form.name,
@@ -321,24 +326,12 @@ export function CheckoutPageClient() {
 
           {/* Payment */}
           <Section title="Payment Method">
-            <div className="grid grid-cols-2 gap-3">
-              {(["cash", "card"] as PaymentType[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setForm({ ...form, paymentMethod: p })}
-                  className={`rounded-md border p-4 text-left transition-all ${
-                    form.paymentMethod === p
-                      ? "border-gold bg-gold/10 text-gold"
-                      : "border-gold/20 text-cream/60 hover:border-gold/40"
-                  }`}
-                >
-                  <div className="text-xl mb-1">{p === "cash" ? "💵" : "💳"}</div>
-                  <div className="font-semibold capitalize text-sm">{p === "card" ? "Card / Online" : "Cash"}</div>
-                  <div className="text-xs mt-0.5 opacity-60">
-                    {p === "cash" ? "Pay on arrival" : "Pay securely now"}
-                  </div>
-                </button>
-              ))}
+            <div className="rounded-md border border-gold bg-gold/10 p-4 text-gold">
+              <div className="text-xl mb-1">💵</div>
+              <div className="font-semibold text-sm">Pay at the Door</div>
+              <div className="text-xs mt-0.5 opacity-70">
+                Cash or card accepted when your order is ready — online card payment isn&apos;t available yet.
+              </div>
             </div>
           </Section>
 

@@ -1,6 +1,7 @@
 "use client";
 
-import type { PizzaPrices, SimpleMenuItem, SpecialtyPizza, SignaturePizza } from "@/data/menu";
+import type { PizzaPrices, SimpleMenuItem, SpecialtyPizza, SignaturePizza, WingOption } from "@/data/menu";
+import { WING_SAUCES, WING_STYLES, WING_STYLE_UPCHARGE_PER_LB } from "@/data/menu";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/format";
 import { motion, AnimatePresence } from "framer-motion";
@@ -199,18 +200,21 @@ export function SignaturePizzaCard({ pizza }: { pizza: SignaturePizza }) {
 export function SandwichCard({ item }: { item: SimpleMenuItem }) {
   const { addItem } = useCart();
   const [side, setSide] = useState(SIDES_OPTIONS[0]);
+  const [notes, setNotes] = useState("");
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
     if (!item.price) return;
+    const parts = [`Side: ${side}`, notes.trim() || null].filter(Boolean).join(" · ");
     addItem({
       id: `${item.id}-${side}-${Date.now()}`,
       name: item.name,
       category: "sandwich",
       price: item.price,
-      notes: `Side: ${side}`,
+      notes: parts,
     });
     setAdded(true);
+    setNotes("");
     setTimeout(() => setAdded(false), 1800);
   };
 
@@ -254,6 +258,15 @@ export function SandwichCard({ item }: { item: SimpleMenuItem }) {
         </div>
       </div>
 
+      {/* Special request */}
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Special requests — add or remove something… (optional)"
+        rows={2}
+        className="mb-3 w-full rounded-lg border border-gold/20 bg-charcoal/50 px-3 py-2 text-xs text-cream/80 placeholder:text-cream/30 outline-none focus:border-gold/45 resize-none transition-colors"
+      />
+
       <div className="relative">
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -273,6 +286,8 @@ export function SandwichCard({ item }: { item: SimpleMenuItem }) {
 export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; category?: string }) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [showNotes, setShowNotes] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState<{ label: string; amount: number } | null>(
     item.prices?.[0] ?? null
   );
@@ -287,8 +302,11 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
       category: category ?? "item",
       price,
       size: selectedPrice?.label,
+      notes: notes.trim() || undefined,
     });
     setAdded(true);
+    setNotes("");
+    setShowNotes(false);
     setTimeout(() => setAdded(false), 1800);
   };
 
@@ -299,67 +317,111 @@ export function SimpleItemCard({ item, category }: { item: SimpleMenuItem; categ
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: "-12px" }}
       transition={{ duration: 0.38 }}
-      className="group flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-3.5 transition-all duration-200 hover:border-gold/40 hover:bg-charcoal/80"
+      className="group flex flex-col rounded-xl border border-gold/18 bg-charcoal/60 px-4 py-3.5 transition-all duration-200 hover:border-gold/40 hover:bg-charcoal/80"
     >
-      <div className="flex-1 min-w-0">
-        <h3 className="font-display text-base text-cream leading-snug">{item.name}</h3>
-        {item.description && (
-          <p className="mt-0.5 text-xs text-cream/55 leading-relaxed line-clamp-2">{item.description}</p>
-        )}
-        {item.note && (
-          <p className="mt-1 text-[11px] text-gold/60 italic">{item.note}</p>
-        )}
-      </div>
-      <div className="flex flex-col items-end gap-2 shrink-0">
-        {typeof item.price === "number" && (
-          <span className="text-base font-bold text-gold">{formatCurrency(item.price)}</span>
-        )}
-        {item.prices && (
-          <div className="flex gap-1.5">
-            {item.prices.map((p) => (
-              <button
-                key={p.label}
-                onClick={() => setSelectedPrice(p)}
-                className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
-                  selectedPrice?.label === p.label
-                    ? "border-gold bg-gold/18 text-gold"
-                    : "border-gold/25 text-gold/60 hover:border-gold/50"
-                }`}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display text-base text-cream leading-snug">{item.name}</h3>
+          {item.description && (
+            <p className="mt-0.5 text-xs text-cream/55 leading-relaxed line-clamp-2">{item.description}</p>
+          )}
+          {item.note && (
+            <p className="mt-1 text-[11px] text-gold/60 italic">{item.note}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowNotes((v) => !v)}
+            className="mt-1.5 text-[11px] font-semibold text-gold/60 underline-offset-2 hover:text-gold hover:underline"
+          >
+            {showNotes ? "Hide special request" : "+ Special request"}
+          </button>
+        </div>
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          {typeof item.price === "number" && (
+            <span className="text-base font-bold text-gold">{formatCurrency(item.price)}</span>
+          )}
+          {item.prices && (
+            <div className="flex gap-1.5">
+              {item.prices.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => setSelectedPrice(p)}
+                  className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
+                    selectedPrice?.label === p.label
+                      ? "border-gold bg-gold/18 text-gold"
+                      : "border-gold/25 text-gold/60 hover:border-gold/50"
+                  }`}
+                >
+                  {p.label} {formatCurrency(p.amount)}
+                </button>
+              ))}
+            </div>
+          )}
+          {price > 0 ? (
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleAdd}
+                className="rounded-lg border border-gold/35 bg-gold/10 px-4 py-1.5 text-xs font-bold text-gold transition-all hover:bg-gold/22 hover:border-gold/60 whitespace-nowrap"
               >
-                {p.label} {formatCurrency(p.amount)}
-              </button>
-            ))}
-          </div>
-        )}
-        {price > 0 ? (
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleAdd}
-              className="rounded-lg border border-gold/35 bg-gold/10 px-4 py-1.5 text-xs font-bold text-gold transition-all hover:bg-gold/22 hover:border-gold/60 whitespace-nowrap"
-            >
-              + Add to Cart
-            </motion.button>
-            <AddedBadge show={added} />
-          </div>
-        ) : (
-          <span className="text-xs text-cream/35 italic">Price varies</span>
-        )}
+                + Add to Cart
+              </motion.button>
+              <AddedBadge show={added} />
+            </div>
+          ) : (
+            <span className="text-xs text-cream/35 italic">Price varies</span>
+          )}
+        </div>
       </div>
+      {showNotes && (
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add or remove something… (optional)"
+          rows={2}
+          className="mt-3 w-full rounded-lg border border-gold/20 bg-charcoal/50 px-3 py-2 text-xs text-cream/80 placeholder:text-cream/30 outline-none focus:border-gold/45 resize-none transition-colors"
+        />
+      )}
     </motion.article>
   );
 }
 
 /* ─── WINGS CARD ────────────────────────────────────────────────────────────── */
-export function WingsCard({ item }: { item: SimpleMenuItem }) {
+export function WingsCard({ item }: { item: WingOption }) {
   const { addItem } = useCart();
+  const [style, setStyle] = useState<(typeof WING_STYLES)[number]>("Classic");
+  const [selectedSauces, setSelectedSauces] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
   const [added, setAdded] = useState(false);
 
+  const styleUpcharge = style === "Classic" ? 0 : item.lbs * WING_STYLE_UPCHARGE_PER_LB;
+  const price = item.price + styleUpcharge;
+
+  const toggleSauce = (s: string) => {
+    setSelectedSauces((prev) => {
+      if (prev.includes(s)) return prev.filter((x) => x !== s);
+      // No min/max — customer can pick as many sauces as the category allows, but cap to the item's included sauce count as a sensible default limit.
+      if (prev.length >= item.sauceChoices) return [...prev.slice(1), s];
+      return [...prev, s];
+    });
+  };
+
   const handleAdd = () => {
-    if (!item.price) return;
-    addItem({ id: `${item.id}-${Date.now()}`, name: item.name, category: "wings", price: item.price });
+    const parts = [
+      style !== "Classic" ? style : null,
+      selectedSauces.length ? `Sauce${selectedSauces.length > 1 ? "s" : ""}: ${selectedSauces.join(", ")}` : null,
+      notes.trim() || null,
+    ].filter(Boolean).join(" · ");
+    addItem({
+      id: `${item.id}-${style}-${Date.now()}`,
+      name: item.name,
+      category: "wings",
+      price,
+      notes: parts || undefined,
+    });
     setAdded(true);
+    setNotes("");
     setTimeout(() => setAdded(false), 1800);
   };
 
@@ -369,24 +431,64 @@ export function WingsCard({ item }: { item: SimpleMenuItem }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-10px" }}
       transition={{ duration: 0.38 }}
-      className="flex items-center justify-between gap-3 rounded-xl border border-orange-700/25 bg-gradient-to-r from-orange-950/20 to-charcoal/70 px-5 py-4 transition-all hover:border-orange-600/40"
+      className="rounded-xl border border-orange-700/25 bg-gradient-to-r from-orange-950/20 to-charcoal/70 px-5 py-4 transition-all hover:border-orange-600/40"
     >
-      <div>
-        <h3 className="font-display text-base text-orange-300">{item.name}</h3>
-        {item.description && <p className="text-xs text-cream/60 mt-0.5">{item.description}</p>}
-      </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <span className="text-lg font-bold text-orange-300">{formatCurrency(item.price ?? 0)}</span>
-        <div className="relative">
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={handleAdd}
-            className="rounded-lg border border-orange-500/40 bg-orange-900/25 px-3 py-1.5 text-xs font-bold text-orange-300 transition-all hover:bg-orange-900/45"
-          >
-            + Add
-          </motion.button>
-          <AddedBadge show={added} />
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-base text-orange-300">{item.name}</h3>
+          <p className="text-xs text-cream/60 mt-0.5">
+            {item.sauceChoices} Sauce{item.sauceChoices > 1 ? "s" : ""} of Choice
+          </p>
         </div>
+        <span className="text-lg font-bold text-orange-300 shrink-0">{formatCurrency(price)}</span>
+      </div>
+
+      {/* Style */}
+      <div className="mt-3">
+        <p className="text-[11px] font-bold text-orange-300/70 uppercase tracking-wide mb-1.5">
+          Style <span className="font-normal text-cream/40">(Breaded / Boneless +${WING_STYLE_UPCHARGE_PER_LB}/LB)</span>
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {WING_STYLES.map((s) => (
+            <button key={s} onClick={() => setStyle(s)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${style === s ? "border-orange-400 bg-orange-900/40 text-orange-300" : "border-orange-700/30 text-cream/60 hover:border-orange-500/50"}`}
+            >{s}{s !== "Classic" ? ` (+$${(item.lbs * WING_STYLE_UPCHARGE_PER_LB).toFixed(2)})` : ""}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sauces */}
+      <div className="mt-3">
+        <p className="text-[11px] font-bold text-orange-300/70 uppercase tracking-wide mb-1.5">
+          Sauce{item.sauceChoices > 1 ? "s" : ""} of Choice — <span className="text-orange-300">{selectedSauces.length}/{item.sauceChoices} selected</span>
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {WING_SAUCES.map((s) => (
+            <button key={s} onClick={() => toggleSauce(s)}
+              className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${selectedSauces.includes(s) ? "border-orange-400 bg-orange-900/40 text-orange-300 font-semibold" : "border-orange-700/25 text-cream/60 hover:border-orange-500/40"}`}
+            >{s}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Special request */}
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Special requests… (optional)"
+        rows={2}
+        className="mt-3 w-full rounded-lg border border-orange-700/25 bg-charcoal/50 px-3 py-2 text-xs text-cream/80 placeholder:text-cream/30 outline-none focus:border-orange-500/45 resize-none transition-colors"
+      />
+
+      <div className="relative mt-3">
+        <motion.button
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+          onClick={handleAdd}
+          className="w-full rounded-lg border border-orange-500/40 bg-orange-900/25 py-2 text-xs font-bold text-orange-300 transition-all hover:bg-orange-900/45"
+        >
+          + Add to Cart — {formatCurrency(price)}
+        </motion.button>
+        <AddedBadge show={added} />
       </div>
     </motion.article>
   );

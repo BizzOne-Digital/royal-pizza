@@ -13,8 +13,6 @@ export function MobileOrderBar() {
     >
       <motion.a
         href={SITE.orderUrl}
-        target="_blank"
-        rel="noopener noreferrer"
         whileHover={{ scale: 1.02, boxShadow: "0 0 28px rgba(201,154,58,0.35)" }}
         whileTap={{ scale: 0.97 }}
         className="ribbon-red flex w-full items-center justify-center rounded-md py-3 text-center text-base font-semibold text-cream shadow-innerWarm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"

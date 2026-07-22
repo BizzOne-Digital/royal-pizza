@@ -7,6 +7,7 @@ const Admin = require("../models/Admin");
 const Order = require("../models/Order");
 const MenuItem = require("../models/MenuItem");
 const Lead = require("../models/Lead");
+const Deal = require("../models/Deal");
 
 const auth = require("../middleware/auth");
 
@@ -460,6 +461,72 @@ if (upload) {
     }
   );
 }
+
+// ─────────────────────────────────────────────────────────────
+// DEALS
+// ─────────────────────────────────────────────────────────────
+
+// GET ALL DEALS
+router.get("/deals", auth, async (req, res) => {
+  try {
+    const deals = await Deal.find().sort({ sortOrder: 1, createdAt: -1 });
+    res.json(deals);
+  } catch (err) {
+    console.error("❌ Deals Fetch Error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// CREATE DEAL
+router.post("/deals", auth, async (req, res) => {
+  try {
+    const deal = new Deal(req.body);
+    await deal.save();
+    res.status(201).json(deal);
+  } catch (err) {
+    console.error("❌ Deal Create Error:", err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// UPDATE DEAL
+router.put("/deals/:id", auth, async (req, res) => {
+  try {
+    const deal = await Deal.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!deal) return res.status(404).json({ message: "Deal not found." });
+    res.json(deal);
+  } catch (err) {
+    console.error("❌ Deal Update Error:", err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// PATCH DEAL (e.g. toggle active)
+router.patch("/deals/:id", auth, async (req, res) => {
+  try {
+    const deal = await Deal.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!deal) return res.status(404).json({ message: "Deal not found." });
+    res.json(deal);
+  } catch (err) {
+    console.error("❌ Deal Patch Error:", err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// DELETE DEAL
+router.delete("/deals/:id", auth, async (req, res) => {
+  try {
+    const deal = await Deal.findByIdAndDelete(req.params.id);
+    if (!deal) return res.status(404).json({ message: "Deal not found." });
+    res.json({ message: "Deal deleted." });
+  } catch (err) {
+    console.error("❌ Deal Delete Error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
 
 // ─────────────────────────────────────────────────────────────
 // LEADS

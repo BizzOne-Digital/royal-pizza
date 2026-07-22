@@ -16,6 +16,8 @@ const orderSchema = new mongoose.Schema(
       phone: { type: String, required: true, trim: true },
       email: { type: String, trim: true, lowercase: true },
     },
+    // Set when the order was placed by a logged-in customer; absent for guest checkout.
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
     items: [orderItemSchema],
     orderType: {
       type: String,

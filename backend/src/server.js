@@ -7,8 +7,10 @@ const cors = require("cors");
 const ordersRouter = require("./routes/orders");
 const leadsRouter = require("./routes/leads");
 const adminRouter = require("./routes/admin");
+const customersRouter = require("./routes/customers");
 
 const MenuItem = require("./models/MenuItem");
+const Deal = require("./models/Deal");
 
 const app = express();
 
@@ -125,6 +127,7 @@ app.get("/health", (req, res) => {
 app.use("/api/orders", ordersRouter);
 app.use("/api/leads", leadsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/customers", customersRouter);
 
 // ─────────────────────────────────────────────────────
 // Public Menu Route
@@ -154,6 +157,20 @@ app.get("/api/menu", async (req, res) => {
     res.status(500).json({
       message: "Menu fetch failed",
     });
+  }
+});
+
+// ─────────────────────────────────────────────────────
+// Public Deals Route
+// ─────────────────────────────────────────────────────
+
+app.get("/api/deals", async (req, res) => {
+  try {
+    const deals = await Deal.find({ active: true }).sort({ sortOrder: 1, createdAt: -1 });
+    res.json(deals);
+  } catch (err) {
+    console.error("❌ Deals Fetch Error:", err);
+    res.status(500).json({ message: "Deals fetch failed" });
   }
 });
 

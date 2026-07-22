@@ -4,6 +4,7 @@ const { body, validationResult } = require("express-validator");
 
 const Order = require("../models/Order");
 const { validateDeliveryAddress } = require("../lib/deliveryValidation");
+const { optional: optionalCustomerAuth } = require("../middleware/customerAuth");
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/orders/validate-delivery — Validate Georgetown Delivery Eligibility
@@ -35,6 +36,7 @@ router.post("/validate-delivery", async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.post(
   "/",
+  optionalCustomerAuth,
   [
     body("customer.name")
       .trim()
@@ -76,7 +78,10 @@ router.post(
         }
       }
 
-      const order = new Order(req.body);
+      const order = new Order({
+        ...req.body,
+        customerId: req.customer ? req.customer._id : undefined,
+      });
 
       await order.save();
 

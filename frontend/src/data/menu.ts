@@ -7,17 +7,18 @@
 export const SITE = {
   name: "The Royal Pizzeria and Bar",
   shortName: "Royal Pizza and Subs",
-  orderUrl: "#",
+  orderUrl: "/menu",
   phones: [
     { label: "Call", href: "tel:+19058772277", display: "(905) 877-2277" },
     { label: "Call", href: "tel:+19058772278", display: "(905) 877-2278" },
+    { label: "Call", href: "tel:+19058771111", display: "(905) 877-1111" },
   ],
   address: {
-    street: "134 Guelph Street",
+    street: "134 Guelph Street, Unit 2",
     cityLine: "Georgetown, Ontario L7G 4A5",
     country: "Canada",
-    full: "134 Guelph Street, Georgetown, Ontario L7G 4A5, Canada",
-    mapsQuery: "134 Guelph Street, Georgetown, Ontario L7G 4A5",
+    full: "134 Guelph Street, Unit 2, Georgetown, Ontario L7G 4A5, Canada",
+    mapsQuery: "134 Guelph Street, Unit 2, Georgetown, Ontario L7G 4A5",
   },
   hours: "Mon–Tue 3PM–10PM · Wed–Thu 12PM–11PM · Fri–Sat 12PM–1AM · Sun 12PM–11PM",
   hoursDetailed: [
@@ -107,42 +108,63 @@ export const STARTERS: SimpleMenuItem[] = [
 // ─── SIDES ─────────────────────────────────────────────────────────────────────
 
 export const SIDES: SimpleMenuItem[] = [
-  { id: "fries", name: "Crispy Fries", price: 6.93, note: "Large +$2" },
-  { id: "rings", name: "Onion Rings", price: 8.93, note: "Large +$2" },
-  { id: "wedges", name: "Seasoned Potato Wedges", price: 8.93, note: "Large +$2" },
+  {
+    id: "fries",
+    name: "Crispy Fries",
+    prices: [
+      { label: "Regular", amount: 6.93 },
+      { label: "Large", amount: 8.93 },
+    ],
+  },
+  {
+    id: "rings",
+    name: "Onion Rings",
+    prices: [
+      { label: "Regular", amount: 8.93 },
+      { label: "Large", amount: 10.93 },
+    ],
+  },
+  {
+    id: "wedges",
+    name: "Seasoned Potato Wedges",
+    prices: [
+      { label: "Regular", amount: 8.93 },
+      { label: "Large", amount: 10.93 },
+    ],
+  },
 ];
 
 // ─── WINGS ─────────────────────────────────────────────────────────────────────
 
-export const WINGS: SimpleMenuItem[] = [
-  {
-    id: "w1",
-    name: "1 LB Wings (8–10 Wings/LB)",
-    price: 15.93,
-    description: "1 Sauce of Choice",
-  },
-  {
-    id: "w2",
-    name: "2 LB Wings (8–10 Wings/LB)",
-    price: 27.93,
-    description: "1 Sauce of Choice",
-  },
-  {
-    id: "w3",
-    name: "3 LB Wings (8–10 Wings/LB)",
-    price: 40.93,
-    description: "2 Sauces of Choice",
-  },
-  {
-    id: "w5",
-    name: "5 LB Wings (8–10 Wings/LB)",
-    price: 62.93,
-    description: "3 Sauces of Choice",
-  },
+export type WingOption = {
+  id: string;
+  name: string;
+  lbs: number;
+  price: number;
+  sauceChoices: number;
+};
+
+export const WINGS: WingOption[] = [
+  { id: "w1", name: "1 LB Wings (8–10 Wings/LB)", lbs: 1, price: 15.93, sauceChoices: 1 },
+  { id: "w2", name: "2 LB Wings (8–10 Wings/LB)", lbs: 2, price: 27.93, sauceChoices: 1 },
+  { id: "w3", name: "3 LB Wings (8–10 Wings/LB)", lbs: 3, price: 40.93, sauceChoices: 2 },
+  { id: "w5", name: "5 LB Wings (8–10 Wings/LB)", lbs: 5, price: 62.93, sauceChoices: 3 },
 ];
 
-export const WING_SAUCES =
-  "Hot, Medium, Mild, BBQ, Honey Garlic, Hot Honey, Sweet Chilli, Hot Honey Garlic";
+// Breaded and boneless wings are +$2/LB over the classic (bone-in) price above.
+export const WING_STYLES = ["Classic", "Breaded", "Boneless"] as const;
+export const WING_STYLE_UPCHARGE_PER_LB = 2;
+
+export const WING_SAUCES = [
+  "Hot",
+  "Medium",
+  "Mild",
+  "BBQ",
+  "Honey Garlic",
+  "Hot Honey",
+  "Sweet Chilli",
+  "Hot Honey Garlic",
+];
 
 // ─── SALADS ────────────────────────────────────────────────────────────────────
 
@@ -358,6 +380,11 @@ export const BYO_TOPPINGS = {
   ],
 } as const;
 
+// Toppings whose label says "(2 Toppings)" must be counted as 2 toppings when pricing a BYO pizza.
+export function toppingCount(name: string): number {
+  return name.includes("2 Toppings") ? 2 : 1;
+}
+
 export const BYO_EXTRAS: { name: string; prices: PizzaPrices }[] = [
   {
     name: "Different Sauce on Base (counts as 1 topping)",
@@ -424,15 +451,24 @@ export const SIGNATURE_PASTAS: SimpleMenuItem[] = [
 ];
 
 export const PASTA_ADDONS: SimpleMenuItem[] = [
-  { id: "pasta-meat", name: "Add Meat", price: 1.5 },
   { id: "pasta-meatballs", name: "Add Meatballs", price: 5.0 },
   { id: "pasta-side-meatballs", name: "Side Order of Meatballs", price: 7.0 },
 ];
 
+// "Add Meat" needs to specify which meat; Chicken/Veal is priced separately from Bacon/Sausage/Beef.
+export const PASTA_ADD_MEAT_OPTIONS = ["Bacon", "Sausage", "Beef"];
+export const PASTA_ADD_MEAT_PRICE = 1.5;
+export const PASTA_ADD_CHICKEN_VEAL_OPTIONS = ["Chicken", "Veal"];
+export const PASTA_ADD_CHICKEN_VEAL_PRICE = 4.0;
+
 export const BUILD_YOUR_OWN_PASTA = {
   startingAt: 11.93,
   pastas: ["Penne", "Rigatoni", "Spaghetti", "Fettuccine", "Ravioli (+$1)"],
-  sauces: ["Marinara", "Rosé (+$2)", "Alfredo (+$2)", "Vodka (+$2)"],
+  sauces: ["Marinara", "Rosé (+$2)", "Alfredo (+$2)", "Vodka (+$2)", "Pesto (+$2)"],
+  // Chicken/Veal and Beef/Sausage/Bacon each need the customer to say which one, so they're separate choices.
+  chickenOrVeal: ["Crispy Chicken", "Veal Cutlet"],
+  meatProteins: ["Beef", "Sausage", "Bacon"],
+  proteinPricing: { chickenOrVeal: 4.0, meatProteins: 1.5, meatballs: 5.0 },
   proteins: [
     "Crispy Chicken or Veal Cutlet (+$4)",
     "Beef, Sausage or Bacon (+$1.50)",
@@ -518,8 +554,7 @@ export const SUBS: SimpleMenuItem[] = [
 
 export const SUB_EXTRAS: SimpleMenuItem[] = [
   { id: "ex-bacon", name: "Extra Bacon", price: 6.0 },
-  { id: "ex-roast-corned", name: "Extra Roast or Corned Beef", price: 9.0 },
-  { id: "ex-cheese-sub", name: "Extra Cheese", price: 1.0 },
+  { id: "ex-cheese-sub", name: "Extra Cheese", price: 2.0 },
 ];
 
 // ─── GARLIC BREADS ─────────────────────────────────────────────────────────────
@@ -571,6 +606,10 @@ export type PizzaDeal = {
   image: string;
   imageAlt: string;
   badge?: string;
+  /** Which weekdays this deal is valid on. Omit if valid every day. */
+  availableDays?: string[];
+  /** Whether this deal can be added to the cart / ordered online, vs. phone/in-store only. */
+  orderableOnline?: boolean;
 };
 
 export const PIZZA_DEALS: PizzaDeal[] = [
@@ -622,9 +661,10 @@ export const PIZZA_DEALS: PizzaDeal[] = [
     title: "Traditional Royal Special",
     price: 49.99,
     description: "1 Large Royal Special Pizza, 1 LB Wings, 1 Garlic Bread with Cheese, 2 Cans of Pop",
-    image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80",
     imageAlt: "Royal special pizza with wings and garlic bread",
     badge: "Fan Favourite",
+    orderableOnline: true,
   },
   {
     id: "family",
@@ -688,16 +728,18 @@ export const PIZZA_DEALS: PizzaDeal[] = [
     title: "2 Baked Lasagnas",
     price: 29.99,
     description: "2 Baked Lasagnas with 2 Cans of Pop",
-    image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?q=80&w=1025&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1619895092538-128341789043?q=80&w=1025&auto=format&fit=crop",
     imageAlt: "Two baked lasagnas",
+    orderableOnline: true,
   },
   {
     id: "2spag",
     title: "2 Baked Spaghettis",
     price: 29.99,
     description: "2 Baked Spaghettis with 2 Cans of Pop",
-    image: "https://images.unsplash.com/photo-1606152196365-d1ce5ea838b5?q=80&w=687&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=687&auto=format&fit=crop",
     imageAlt: "Two baked spaghettis",
+    orderableOnline: true,
   },
 ];
 

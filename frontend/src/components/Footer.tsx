@@ -92,8 +92,6 @@ export function Footer() {
             <li>
               <motion.a
                 href={SITE.orderUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-block text-cream/90 underline-offset-4 hover:underline"
                 {...linkMotion}
               >

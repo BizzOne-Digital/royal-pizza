@@ -11,6 +11,7 @@ const nav = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "📊" },
   { href: "/admin/orders", label: "Orders", icon: "🧾" },
   { href: "/admin/menu", label: "Menu", icon: "🍕" },
+  { href: "/admin/deals", label: "Deals", icon: "🎉" },
   { href: "/admin/leads", label: "Leads", icon: "📋" },
 ];
 

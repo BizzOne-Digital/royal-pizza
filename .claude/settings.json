@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check src/seed.js)",
+      "Bash(node --check src/seedDeals.js)",
+      "Bash(node src/seedDeals.js)"
+    ]
+  }
+}
