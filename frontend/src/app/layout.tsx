@@ -37,6 +37,11 @@ export const metadata: Metadata = {
     template: `%s | ${SITE.shortName}`,
   },
   description: `Stone-baked pizza, subs, wings, and pastas in Georgetown since ${SITE.established}. ${SITE.address.full}.`,
+  icons: {
+    icon: "/assets/royal-logo.png",
+    shortcut: "/assets/royal-logo.png",
+    apple: "/assets/royal-logo.png",
+  },
   openGraph: {
     title: `${SITE.name} / ${SITE.shortName}`,
     description:
