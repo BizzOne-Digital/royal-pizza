@@ -1,11 +1,35 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminShell } from "./AdminShell";
 import { formatCurrency } from "@/lib/format";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const POLL_INTERVAL_MS = 10000;
+
+function playNewOrderChime() {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    const beep = (delay: number, freq: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.35);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.4);
+    };
+    beep(0, 880);
+    beep(0.4, 1046.5);
+  } catch {
+    // audio not supported/blocked, ignore
+  }
+}
 
 type OrderItem = { name: string; quantity: number; price: number; size?: string; category?: string };
 type Order = {
@@ -72,17 +96,55 @@ export function AdminOrdersClient() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [filter, setFilter] = useState<string>("all");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [newOrderToast, setNewOrderToast] = useState<Order | null>(null);
+  const knownIds = useRef<Set<string> | null>(null);
+
+  const fetchOrders = useCallback(async (isInitial: boolean) => {
+    const token = localStorage.getItem("admin_token");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+
+      if (knownIds.current === null) {
+        knownIds.current = new Set(data.map((o: Order) => o._id));
+      } else if (!isInitial) {
+        const fresh = data.filter((o: Order) => !knownIds.current!.has(o._id));
+        if (fresh.length > 0) {
+          fresh.forEach((o: Order) => knownIds.current!.add(o._id));
+          playNewOrderChime();
+          setNewOrderToast(fresh[0]);
+          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            new Notification("New order received", {
+              body: `${fresh[0].customer.name} · ${formatCurrency(fresh[0].total)}`,
+            });
+          }
+        }
+      }
+      setOrders(data);
+    } catch {
+      // keep showing last known orders on transient network errors
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("admin_token");
-    fetch(`${BACKEND_URL}/api/admin/orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) setOrders(d); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    fetchOrders(true);
+    const interval = setInterval(() => fetchOrders(false), POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!newOrderToast) return;
+    const t = setTimeout(() => setNewOrderToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [newOrderToast]);
 
   const updateStatus = async (orderId: string, status: string) => {
     setUpdating(orderId);
@@ -109,6 +171,21 @@ export function AdminOrdersClient() {
 
   return (
     <AdminShell>
+      <AnimatePresence>
+        {newOrderToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.96 }}
+            onClick={() => { setSelected(newOrderToast); setNewOrderToast(null); }}
+            className="fixed top-4 right-4 z-[60] w-full max-w-xs cursor-pointer rounded-lg border border-gold bg-[#161209] px-4 py-3 shadow-xl shadow-black/40"
+          >
+            <p className="text-xs font-semibold text-gold uppercase tracking-wider mb-1">New Order</p>
+            <p className="text-sm text-cream">{newOrderToast.customer.name} · {formatCurrency(newOrderToast.total)}</p>
+            <p className="text-xs text-cream/40">{newOrderToast.orderType === "delivery" ? "Delivery" : "Pickup"} · tap to view</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="space-y-5">
         {/* Filter tabs */}
         <div className="flex gap-2 flex-wrap">

@@ -5,6 +5,7 @@ const { body, validationResult } = require("express-validator");
 const Order = require("../models/Order");
 const { validateDeliveryAddress } = require("../lib/deliveryValidation");
 const { optional: optionalCustomerAuth } = require("../middleware/customerAuth");
+const { sendNewOrderEmail } = require("../lib/mailer");
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/orders/validate-delivery — Validate Georgetown Delivery Eligibility
@@ -84,6 +85,8 @@ router.post(
       });
 
       await order.save();
+
+      sendNewOrderEmail(order).catch((err) => console.error("❌ Email notification error:", err.message));
 
       res.status(201).json({
         message: "Order placed successfully",

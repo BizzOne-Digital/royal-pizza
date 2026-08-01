@@ -3,7 +3,10 @@
     "allow": [
       "Bash(node --check src/seed.js)",
       "Bash(node --check src/seedDeals.js)",
-      "Bash(node src/seedDeals.js)"
+      "Bash(node src/seedDeals.js)",
+      "Bash(node -e \"require\\('./src/lib/mailer.js'\\); console.log\\('mailer loads OK'\\)\")",
+      "Bash(node --check src/routes/orders.js)",
+      "Bash(node -e ' *)"
     ]
   }
 }
