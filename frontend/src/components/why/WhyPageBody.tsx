@@ -116,12 +116,12 @@ export function WhyPageBody() {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <motion.a
-            href={SITE.orderUrl}
+            href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             className="ribbon-red rounded-md px-8 py-3 font-semibold text-cream"
           >
-            Order Now
+            {SITE.orderingEnabled ? "Order Now" : "Call Now to Order"}
           </motion.a>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link

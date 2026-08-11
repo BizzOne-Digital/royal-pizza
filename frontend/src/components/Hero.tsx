@@ -162,12 +162,12 @@ export function Hero({
             className="mt-8 flex flex-wrap gap-3"
           >
             <motion.a
-              href={SITE.orderUrl}
+              href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
               whileHover={{ scale: 1.04, boxShadow: "0 0 32px rgba(201,154,58,0.35)" }}
               whileTap={{ scale: 0.97 }}
               className="ribbon-red inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-semibold text-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
-              Order Now
+              {SITE.orderingEnabled ? "Order Now" : "Call Now to Order"}
             </motion.a>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link

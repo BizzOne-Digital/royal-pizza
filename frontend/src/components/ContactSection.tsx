@@ -66,12 +66,12 @@ export function ContactSection({ showForm = true }: { showForm?: boolean }) {
   Get directions
 </motion.a>
             <motion.a
-              href={SITE.orderUrl}
+              href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="rounded-md border border-cream/30 px-4 py-2 text-sm text-cream hover:border-gold hover:text-gold"
             >
-              Order Now
+              {SITE.orderingEnabled ? "Order Now" : "Call Now to Order"}
             </motion.a>
           </div>
         </motion.div>

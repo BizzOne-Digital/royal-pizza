@@ -101,12 +101,12 @@ export function PizzaDealsPageBody() {
           crew can suggest the cleanest swap if an item is temporarily unavailable.
         </Reveal>
         <motion.a
-          href={SITE.orderUrl}
+          href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
           whileHover={{ scale: 1.04, boxShadow: "0 0 28px rgba(201,154,58,0.3)" }}
           whileTap={{ scale: 0.97 }}
           className="ribbon-red rounded-md px-6 py-3 text-sm font-semibold text-cream"
         >
-          Order deals online
+          {SITE.orderingEnabled ? "Order deals online" : "Call Now to Order"}
         </motion.a>
       </div>
 

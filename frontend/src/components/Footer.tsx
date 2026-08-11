@@ -91,11 +91,11 @@ export function Footer() {
             ))}
             <li>
               <motion.a
-                href={SITE.orderUrl}
+                href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
                 className="inline-block text-cream/90 underline-offset-4 hover:underline"
                 {...linkMotion}
               >
-                Order online
+                {SITE.orderingEnabled ? "Order online" : "Call to order"}
               </motion.a>
             </li>
           </ul>

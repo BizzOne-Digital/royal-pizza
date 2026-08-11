@@ -190,13 +190,13 @@ export function Header() {
                 {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Sign In / My Orders"}
               </Link>
               <motion.a
-                href={SITE.orderUrl}
+                href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.35 }}
                 className="ribbon-red mt-2 rounded-md px-4 py-3 text-center font-semibold text-cream"
               >
-                Order Now
+                {SITE.orderingEnabled ? "Order Now" : "Call Now to Order"}
               </motion.a>
             </nav>
           </motion.div>

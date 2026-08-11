@@ -8,6 +8,8 @@ export const SITE = {
   name: "The Royal Pizzeria and Bar",
   shortName: "Royal Pizza and Subs",
   orderUrl: "/menu",
+  // Temporarily disable online ordering (order-notification issue) — set back to true once resolved.
+  orderingEnabled: false,
   phones: [
     { label: "Call", href: "tel:+19058772277", display: "(905) 877-2277" },
     { label: "Call", href: "tel:+19058772278", display: "(905) 877-2278" },

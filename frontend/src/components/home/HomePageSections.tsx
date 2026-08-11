@@ -234,12 +234,12 @@ export function HomePageSections() {
               </div>
               <div className="flex flex-col justify-center gap-3">
                 <motion.a
-                  href={SITE.orderUrl}
+                  href={SITE.orderingEnabled ? SITE.orderUrl : SITE.phones[0].href}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   className="ribbon-red rounded-md py-3 text-center font-semibold text-cream"
                 >
-                  Order Now
+                  {SITE.orderingEnabled ? "Order Now" : "Call Now to Order"}
                 </motion.a>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link

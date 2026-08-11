@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatCurrency } from "@/lib/format";
+import { SITE } from "@/data/menu";
 
 const DELIVERY_RESTRICTION_MESSAGE = "Sorry, we currently deliver only within Georgetown.";
 
@@ -203,6 +204,23 @@ export function CheckoutPageClient() {
             Order Again
           </Link>
         </motion.div>
+      </div>
+    );
+  }
+
+  if (!SITE.orderingEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-16 text-center">
+        <div>
+          <div className="text-5xl mb-4 opacity-30">📞</div>
+          <h1 className="font-display text-2xl text-cream mb-3">Online ordering is temporarily unavailable</h1>
+          <p className="text-cream/50 mb-6 max-w-md mx-auto">
+            We&apos;re not able to take online orders right now. Please call us and we&apos;ll get your order started right away.
+          </p>
+          <a href={SITE.phones[0].href} className="ribbon-red inline-flex rounded-md px-6 py-3 text-sm font-semibold text-cream">
+            Call {SITE.phones[0].display}
+          </a>
+        </div>
       </div>
     );
   }
